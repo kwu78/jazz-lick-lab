@@ -1,8 +1,8 @@
-import time
 import logging
 
 from database import SessionLocal
 from models import Job
+from services.klangio import transcribe
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +20,9 @@ def process_job(job_id: str) -> None:
         db.commit()
         logger.info("Job %s: TRANSCRIBING", job_id)
 
-        # Stub: simulate work
-        time.sleep(3)
+        result = transcribe(job.audio_path, job.instrument)
 
+        job.result_json = result
         job.status = "READY"
         db.commit()
         logger.info("Job %s: READY", job_id)

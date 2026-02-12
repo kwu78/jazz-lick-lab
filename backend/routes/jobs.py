@@ -23,6 +23,7 @@ def _job_to_dict(job: Job) -> dict:
         "instrument": job.instrument,
         "audio_path": job.audio_path,
         "created_at": job.created_at.isoformat() if job.created_at else None,
+        "result_json": job.result_json,
         "error": job.error,
     }
 

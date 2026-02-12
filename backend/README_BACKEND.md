@@ -42,8 +42,8 @@ curl http://localhost:8000/health
 
 ```bash
 curl -X POST http://localhost:8000/jobs \
-  -F "audio=@/path/to/your/file.mp3" \
-  -F "instrument=guitar"
+  -F "audio=@demo.mp3" \
+  -F "instrument=saxophone"
 ```
 curl -X POST http://localhost:8000/jobs \
   -F "audio=@/Users/Kevin/Desktop/Music/trap-158bpm (online-audio-converter.com).mp3" \
