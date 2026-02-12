@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Jazz Lick Lab
+# Keep data directory tracked but ignore uploaded files
+data/*
+!data/.gitkeep
