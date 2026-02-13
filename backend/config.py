@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@postgres:5432/jazzlicklab"
     redis_url: str = "redis://redis:6379/0"
     data_dir: str = "/app/data"
+    coach_provider: str = "rules"
 
     class Config:
         env_file = ".env"

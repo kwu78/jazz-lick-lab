@@ -15,11 +15,11 @@ def transcribe(audio_path: str, instrument: str) -> dict:
 
     return {
         "notes": [
-            {"pitch": 60, "start": 0.0, "duration": 0.5},
-            {"pitch": 62, "start": 0.5, "duration": 0.5},
+            {"pitch_midi": 60, "start_sec": 0.0, "duration_sec": 0.5},
+            {"pitch_midi": 62, "start_sec": 0.5, "duration_sec": 0.5},
         ],
         "chords": [
-            {"symbol": "Dm7", "start": 0.0},
-            {"symbol": "G7", "start": 2.0},
+            {"symbol": "Dm7", "start_sec": 0.0, "end_sec": 2.0},
+            {"symbol": "G7", "start_sec": 2.0, "end_sec": None},
         ],
     }
