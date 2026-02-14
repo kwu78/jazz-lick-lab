@@ -1,4 +1,5 @@
 import math
+import os
 import uuid
 import logging
 from datetime import datetime, timezone
@@ -7,6 +8,7 @@ from typing import List
 import redis
 from rq import Queue
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -16,6 +18,12 @@ from database import get_db
 from models import Job
 from schemas.analysis import AnalysisResponse
 from schemas.lick import LickRequest, LickSelection
+from schemas.practice_pack import (
+    PracticePackArtifact,
+    PracticePackListResponse,
+    PracticePackRequest,
+    PracticePackResponse,
+)
 from schemas.selection import (
     SelectionCreateRequest,
     SelectionCreateResponse,
@@ -27,6 +35,7 @@ from schemas.transcription import TranscriptionResult, NoteEvent, ChordEvent
 from schemas.transpose import TransposeRequest, TransposeResponse
 from services.analysis import compute_coverage, detect_ii_v_i
 from services.coach_factory import get_coach_provider
+from services.practice_pack import build_practice_pack
 from services.storage import save_audio
 from services.theory import (
     parse_chord_root,
@@ -554,3 +563,137 @@ def update_chords(
         for c in raw_chords
     ]
     return {"job_id": job.id, "chords": [c.model_dump() for c in display_chords]}
+
+
+@router.post("/jobs/{job_id}/practice-pack")
+def create_practice_pack(
+    job_id: str,
+    req: PracticePackRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    job, transcription, job_settings = _load_ready_transcription_with_settings(job_id, db)
+
+    # Validate target_keys if provided
+    if req.target_keys is not None:
+        for k in req.target_keys:
+            try:
+                parse_key(k)
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid target key: {k!r}")
+
+    # Find selection
+    raw_selections = job.result_json.get("selections", []) or []
+    matched = None
+    for raw in raw_selections:
+        try:
+            rec = SelectionRecord(**raw)
+        except ValidationError as exc:
+            logger.error("Job %s: invalid selection schema: %s", job_id, exc)
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid selection schema in result_json",
+            )
+        if rec.selection_id == req.selection_id:
+            matched = rec
+            break
+
+    if matched is None:
+        raise HTTPException(status_code=404, detail="Selection not found")
+
+    # Extract lick (raw-time)
+    notes, chords = _extract_lick(transcription, matched.start_sec, matched.end_sec)
+
+    # Build the practice pack
+    artifact = build_practice_pack(
+        job_id=job.id,
+        selection_id=req.selection_id,
+        notes=notes,
+        chords=chords,
+        offset_sec=job_settings.offset_sec,
+        data_dir=settings.data_dir,
+        target_keys=req.target_keys,
+        include_original=req.include_original,
+    )
+
+    # Store artifact metadata in result_json["practice_packs"]
+    existing_packs = job.result_json.get("practice_packs", []) or []
+    existing_packs.append(artifact.model_dump())
+    updated = {**job.result_json, "practice_packs": existing_packs}
+    job.result_json = updated
+    flag_modified(job, "result_json")
+    db.commit()
+
+    return PracticePackResponse(
+        job_id=job.id,
+        artifact=artifact,
+    ).model_dump()
+
+
+@router.get("/jobs/{job_id}/practice-pack")
+def list_practice_packs(
+    job_id: str,
+    db: Session = Depends(get_db),
+) -> dict:
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.result_json is None:
+        return PracticePackListResponse(job_id=job.id, practice_packs=[]).model_dump()
+
+    raw_packs = job.result_json.get("practice_packs", []) or []
+
+    validated = []
+    for raw in raw_packs:
+        try:
+            validated.append(PracticePackArtifact(**raw))
+        except ValidationError as exc:
+            logger.error("Job %s: invalid practice pack schema: %s", job_id, exc)
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid practice pack schema in result_json",
+            )
+
+    return PracticePackListResponse(
+        job_id=job.id,
+        practice_packs=validated,
+    ).model_dump()
+
+
+@router.get("/jobs/{job_id}/practice-pack/{artifact_id}/download")
+def download_practice_pack(
+    job_id: str,
+    artifact_id: str,
+    db: Session = Depends(get_db),
+):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    raw_packs = (job.result_json or {}).get("practice_packs", []) or []
+    matched = None
+    for raw in raw_packs:
+        try:
+            artifact = PracticePackArtifact(**raw)
+        except ValidationError as exc:
+            logger.error("Job %s: invalid practice pack schema: %s", job_id, exc)
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid practice pack schema in result_json",
+            )
+        if artifact.artifact_id == artifact_id:
+            matched = artifact
+            break
+
+    if matched is None:
+        raise HTTPException(status_code=404, detail="Practice pack not found")
+
+    if not os.path.isfile(matched.zip_path):
+        raise HTTPException(status_code=404, detail="Practice pack file not found")
+
+    filename = f"jazz_lick_lab_{job_id}_{artifact_id}.zip"
+    return FileResponse(
+        path=matched.zip_path,
+        media_type="application/zip",
+        filename=filename,
+    )
