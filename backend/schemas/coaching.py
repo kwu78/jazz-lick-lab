@@ -10,3 +10,4 @@ class CoachingResponse(BaseModel):
     variation_idea: str
     listening_tip: str
     rationale: Optional[str] = None
+    flags: List[str] = []
