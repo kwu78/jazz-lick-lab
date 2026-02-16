@@ -17,6 +17,7 @@ class KeyEntry(BaseModel):
     notes: List[NoteEvent]
     chords: List[ChordEvent]
     file_name: str
+    musicxml_file_name: str
 
 
 class PracticePackArtifact(BaseModel):

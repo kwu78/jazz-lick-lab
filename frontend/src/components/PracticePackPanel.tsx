@@ -67,7 +67,7 @@ export default function PracticePackPanel({ jobId, selectionId }: Props) {
             >
               <div>
                 <span className="text-muted">
-                  {p.keys.length} keys
+                  {p.keys_included.length} keys
                 </span>
                 <span className="text-xs text-muted ml-2">
                   {new Date(p.created_at).toLocaleString()}
@@ -75,6 +75,7 @@ export default function PracticePackPanel({ jobId, selectionId }: Props) {
               </div>
               <a
                 href={downloadPracticePackUrl(jobId, p.artifact_id)}
+                download
                 className="text-ink underline text-sm"
               >
                 Download

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from schemas.practice_pack import KeyEntry, PracticePackArtifact
 from schemas.transcription import NoteEvent, ChordEvent
+from services.musicxml import generate_musicxml
 from services.theory import (
     SEMITONE_TO_NAME,
     parse_chord_root,
@@ -26,6 +27,8 @@ def build_practice_pack(
     data_dir: str,
     target_keys: list[str] | None = None,
     include_original: bool = True,
+    bpm: float = 120.0,
+    time_signature: str = "4/4",
 ) -> PracticePackArtifact:
     """Generate per-key JSON files, a manifest, and a ZIP archive."""
 
@@ -75,7 +78,9 @@ def build_practice_pack(
             for c in chords
         ]
 
-        file_name = f"{key.replace('#', 'sharp').replace('b', 'flat')}.json"
+        safe_key = key.replace("#", "sharp").replace("b", "flat")
+        file_name = f"{safe_key}.json"
+        musicxml_file_name = f"{safe_key}.musicxml"
 
         entry = KeyEntry(
             key=key,
@@ -83,6 +88,7 @@ def build_practice_pack(
             notes=transposed_notes,
             chords=transposed_chords,
             file_name=file_name,
+            musicxml_file_name=musicxml_file_name,
         )
         key_entries.append(entry)
 
@@ -90,6 +96,15 @@ def build_practice_pack(
         file_path = os.path.join(pack_dir, file_name)
         with open(file_path, "w") as f:
             json.dump(entry.model_dump(), f, indent=2)
+
+        # Write per-key MusicXML file
+        mxml_str = generate_musicxml(
+            transposed_notes, transposed_chords,
+            bpm=bpm, time_signature=time_signature,
+        )
+        mxml_path = os.path.join(pack_dir, musicxml_file_name)
+        with open(mxml_path, "w", encoding="utf-8") as f:
+            f.write(mxml_str)
 
     # Write manifest
     manifest = {
@@ -107,8 +122,11 @@ def build_practice_pack(
     zip_path = os.path.join(pack_dir, "practice_pack.zip")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for entry in key_entries:
-            file_path = os.path.join(pack_dir, entry.file_name)
-            zf.write(file_path, arcname=entry.file_name)
+            zf.write(os.path.join(pack_dir, entry.file_name), arcname=entry.file_name)
+            zf.write(
+                os.path.join(pack_dir, entry.musicxml_file_name),
+                arcname=entry.musicxml_file_name,
+            )
         zf.write(manifest_path, arcname="manifest.json")
 
     return PracticePackArtifact(

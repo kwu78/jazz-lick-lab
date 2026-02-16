@@ -613,6 +613,8 @@ def create_practice_pack(
         data_dir=settings.data_dir,
         target_keys=req.target_keys,
         include_original=req.include_original,
+        bpm=job_settings.bpm or 120.0,
+        time_signature=job_settings.time_signature or "4/4",
     )
 
     # Store artifact metadata in result_json["practice_packs"]
@@ -696,6 +698,52 @@ def download_practice_pack(
         path=matched.zip_path,
         media_type="application/zip",
         filename=filename,
+    )
+
+
+@router.get("/jobs/{job_id}/practice-pack/{artifact_id}/keys/{key}/musicxml")
+def get_practice_pack_musicxml(
+    job_id: str,
+    artifact_id: str,
+    key: str,
+    db: Session = Depends(get_db),
+):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    raw_packs = (job.result_json or {}).get("practice_packs", []) or []
+    matched = None
+    for raw in raw_packs:
+        try:
+            artifact = PracticePackArtifact(**raw)
+        except ValidationError as exc:
+            logger.error("Job %s: invalid practice pack schema: %s", job_id, exc)
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid practice pack schema in result_json",
+            )
+        if artifact.artifact_id == artifact_id:
+            matched = artifact
+            break
+
+    if matched is None:
+        raise HTTPException(status_code=404, detail="Practice pack not found")
+
+    if key not in matched.keys_included:
+        raise HTTPException(status_code=404, detail=f"Key {key!r} not found in this practice pack")
+
+    safe_key = key.replace("#", "sharp").replace("b", "flat")
+    mxml_filename = f"{safe_key}.musicxml"
+    mxml_path = os.path.join(matched.dir_path, mxml_filename)
+
+    if not os.path.isfile(mxml_path):
+        raise HTTPException(status_code=404, detail="MusicXML file not found")
+
+    return FileResponse(
+        path=mxml_path,
+        media_type="application/vnd.recordare.musicxml+xml",
+        filename=f"{key}.musicxml",
     )
 
 

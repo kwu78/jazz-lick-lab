@@ -58,7 +58,7 @@ export interface Coaching {
 export interface PracticePackArtifact {
   artifact_id: string;
   selection_id: string;
-  keys: string[];
+  keys_included: string[];
   zip_path: string;
   created_at: string;
 }
