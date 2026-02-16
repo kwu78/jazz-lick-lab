@@ -7,8 +7,8 @@ from typing import List
 
 import redis
 from rq import Queue
-from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, Query
+from fastapi.responses import FileResponse, Response
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -35,6 +35,7 @@ from schemas.transcription import TranscriptionResult, NoteEvent, ChordEvent
 from schemas.transpose import TransposeRequest, TransposeResponse
 from services.analysis import compute_coverage, detect_ii_v_i
 from services.coach_factory import get_coach_provider
+from services.musicxml import generate_musicxml
 from services.practice_pack import build_practice_pack
 from services.storage import save_audio
 from services.theory import (
@@ -82,7 +83,7 @@ def create_job(
 
     conn = redis.from_url(settings.redis_url)
     q = Queue(connection=conn)
-    q.enqueue(process_job, job_id)
+    q.enqueue(process_job, job_id, job_timeout=600)
 
     logger.info("Created and enqueued job %s (instrument=%s)", job_id, instrument)
     return _job_to_dict(job)
@@ -744,6 +745,87 @@ def get_practice_pack_musicxml(
         path=mxml_path,
         media_type="application/vnd.recordare.musicxml+xml",
         filename=f"{key}.musicxml",
+    )
+
+
+@router.get("/jobs/{job_id}/score-preview")
+def score_preview(
+    job_id: str,
+    start_sec: float = Query(...),
+    end_sec: float = Query(...),
+    key: str | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    _validate_time_range(start_sec, end_sec)
+    job, transcription, job_settings = _load_ready_transcription_with_settings(job_id, db)
+    offset = job_settings.offset_sec
+
+    # Convert display-time → raw-time (consistent with /notes, /chords)
+    raw_start = start_sec + offset
+    raw_end = end_sec + offset
+
+    notes, chords = _extract_lick(transcription, raw_start, raw_end)
+
+    # Shift extracted notes/chords to start near zero for a compact score
+    if notes or chords:
+        origin = raw_start - offset
+        notes = [
+            NoteEvent(
+                pitch_midi=n.pitch_midi,
+                start_sec=n.start_sec - offset - origin,
+                duration_sec=n.duration_sec,
+            )
+            for n in notes
+        ]
+        chords = [
+            ChordEvent(
+                symbol=c.symbol,
+                start_sec=c.start_sec - offset - origin,
+                end_sec=(c.end_sec - offset - origin) if c.end_sec is not None else None,
+            )
+            for c in chords
+        ]
+
+    # Transpose if key is provided
+    if key:
+        try:
+            parse_key(key)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid key: {key!r}")
+
+        # Infer source key from first chord root
+        source_key = "C"
+        if chords:
+            root = parse_chord_root(chords[0].symbol)
+            if root:
+                source_key = root
+
+        interval = semitone_interval(source_key, key)
+        if interval != 0:
+            notes = [
+                NoteEvent(
+                    pitch_midi=n.pitch_midi + interval,
+                    start_sec=n.start_sec,
+                    duration_sec=n.duration_sec,
+                )
+                for n in notes
+            ]
+            chords = [
+                ChordEvent(
+                    symbol=transpose_chord_symbol(c.symbol, interval),
+                    start_sec=c.start_sec,
+                    end_sec=c.end_sec,
+                )
+                for c in chords
+            ]
+
+    bpm = job_settings.bpm or 120.0
+    time_sig = job_settings.time_signature or "4/4"
+    xml = generate_musicxml(notes, chords, bpm=bpm, time_signature=time_sig)
+
+    return Response(
+        content=xml,
+        media_type="application/vnd.recordare.musicxml+xml",
     )
 
 

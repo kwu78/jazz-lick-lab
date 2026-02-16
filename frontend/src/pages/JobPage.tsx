@@ -1,14 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import PageShell from "../components/PageShell";
 import Panel from "../components/Panel";
 import ErrorBox from "../components/ErrorBox";
-import Waveform from "../components/Waveform";
+import Waveform, { type WaveformHandle } from "../components/Waveform";
+import ScoreViewer from "../components/ScoreViewer";
 import SelectionPanel from "../components/SelectionPanel";
 import AnalysisPanel from "../components/AnalysisPanel";
 import CoachingPanel from "../components/CoachingPanel";
 import PracticePackPanel from "../components/PracticePackPanel";
+import Button from "../components/Button";
 import { getJob, getAudioUrl, type Job, type Selection } from "../api/jobs";
+import { BASE_URL } from "../api/client";
+
+const ALL_KEYS = [
+  "C", "Db", "D", "Eb", "E", "F",
+  "F#", "G", "Ab", "A", "Bb", "B",
+];
 
 export default function JobPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -19,6 +27,8 @@ export default function JobPage() {
   const [activeSelection, setActiveSelection] = useState<Selection | null>(
     null
   );
+  const [previewKey, setPreviewKey] = useState("C");
+  const waveformRef = useRef<WaveformHandle>(null);
 
   // Poll job status
   useEffect(() => {
@@ -52,6 +62,39 @@ export default function JobPage() {
     setRegionEnd(end);
   }, []);
 
+  const handlePlaySelection = useCallback(() => {
+    if (regionStart != null && regionEnd != null && waveformRef.current) {
+      waveformRef.current.playRegion(regionStart, regionEnd);
+    }
+  }, [regionStart, regionEnd]);
+
+  // Debounced score preview URL — only update after region stops changing
+  const [debouncedRegion, setDebouncedRegion] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (regionStart == null || regionEnd == null) {
+      setDebouncedRegion(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDebouncedRegion({ start: regionStart, end: regionEnd });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [regionStart, regionEnd]);
+
+  const scorePreviewUrl = useMemo(() => {
+    if (!debouncedRegion || !jobId) return null;
+    const params = new URLSearchParams({
+      start_sec: debouncedRegion.start.toFixed(2),
+      end_sec: debouncedRegion.end.toFixed(2),
+      key: previewKey,
+    });
+    return `${BASE_URL}/jobs/${jobId}/score-preview?${params}`;
+  }, [debouncedRegion, previewKey, jobId]);
+
   if (!jobId) return null;
 
   const isReady = job?.status === "READY";
@@ -61,6 +104,7 @@ export default function JobPage() {
     READY: "Ready",
     FAILED: "Failed",
   };
+  const hasRegion = regionStart != null && regionEnd != null;
 
   return (
     <PageShell>
@@ -88,9 +132,56 @@ export default function JobPage() {
         <>
           <Panel title="Waveform">
             <Waveform
+              ref={waveformRef}
               audioUrl={getAudioUrl(jobId)}
               onRegionChange={handleRegionChange}
             />
+            <div className="mt-3 flex items-center gap-3">
+              <Button
+                variant="secondary"
+                disabled={!hasRegion}
+                onClick={handlePlaySelection}
+              >
+                Play Selection
+              </Button>
+              {!hasRegion && (
+                <span className="text-xs text-muted">
+                  Drag a region on the waveform first
+                </span>
+              )}
+            </div>
+          </Panel>
+
+          {/* Score Preview */}
+          <Panel title="Score Preview">
+            <div className="flex items-center gap-3 mb-4">
+              <label className="flex items-center gap-1.5 text-xs text-muted">
+                Key:
+                <select
+                  value={previewKey}
+                  onChange={(e) => setPreviewKey(e.target.value)}
+                  className="border border-border rounded px-2 py-1 text-xs bg-page text-ink"
+                >
+                  {ALL_KEYS.map((k) => (
+                    <option key={k} value={k}>
+                      {k}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {hasRegion && (
+                <span className="text-xs text-muted">
+                  {regionStart!.toFixed(2)}s &ndash; {regionEnd!.toFixed(2)}s
+                </span>
+              )}
+            </div>
+            {scorePreviewUrl ? (
+              <ScoreViewer musicXmlUrl={scorePreviewUrl} />
+            ) : (
+              <p className="text-sm text-muted py-4 text-center">
+                Drag a region on the waveform to preview its score
+              </p>
+            )}
           </Panel>
 
           <SelectionPanel

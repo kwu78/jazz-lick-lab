@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin, { type Region } from "wavesurfer.js/dist/plugins/regions.js";
 import Button from "./Button";
@@ -8,7 +8,14 @@ interface Props {
   onRegionChange?: (start: number, end: number) => void;
 }
 
-export default function Waveform({ audioUrl, onRegionChange }: Props) {
+export interface WaveformHandle {
+  playRegion: (start: number, end: number) => void;
+}
+
+const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
+  { audioUrl, onRegionChange },
+  ref
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WaveSurfer | null>(null);
   const regionsRef = useRef<RegionsPlugin | null>(null);
@@ -27,6 +34,23 @@ export default function Waveform({ audioUrl, onRegionChange }: Props) {
     },
     [onRegionChange]
   );
+
+  useImperativeHandle(ref, () => ({
+    playRegion(start: number, end: number) {
+      const ws = wsRef.current;
+      if (!ws) return;
+      ws.setTime(start);
+      ws.play();
+      // Stop at end
+      const onTime = () => {
+        if (ws.getCurrentTime() >= end) {
+          ws.pause();
+          ws.un("timeupdate", onTime);
+        }
+      };
+      ws.on("timeupdate", onTime);
+    },
+  }));
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -97,4 +121,6 @@ export default function Waveform({ audioUrl, onRegionChange }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default Waveform;
