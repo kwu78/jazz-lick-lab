@@ -210,3 +210,6 @@ __marimo__/
 # Keep data directory tracked but ignore uploaded files
 data/*
 !data/.gitkeep
+.env
+backend/.env
+frontend/.env
