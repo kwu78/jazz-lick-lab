@@ -697,3 +697,30 @@ def download_practice_pack(
         media_type="application/zip",
         filename=filename,
     )
+
+
+@router.get("/jobs/{job_id}/audio")
+def get_audio(job_id: str, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if not job.audio_path or not os.path.isfile(job.audio_path):
+        raise HTTPException(status_code=404, detail="Audio file not found")
+
+    ext = os.path.splitext(job.audio_path)[1].lower()
+    media_type = {
+        ".mp3": "audio/mpeg",
+        ".wav": "audio/wav",
+        ".m4a": "audio/mp4",
+        ".flac": "audio/flac",
+        ".ogg": "audio/ogg",
+        ".aac": "audio/aac",
+    }.get(ext, "application/octet-stream")
+
+    filename = f"jazz_lick_lab_{job_id}{ext}"
+    return FileResponse(
+        path=job.audio_path,
+        media_type=media_type,
+        filename=filename,
+    )

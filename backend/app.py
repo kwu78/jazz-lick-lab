@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base
 from routes.health import router as health_router
@@ -12,6 +13,13 @@ logging.basicConfig(
 )
 
 app = FastAPI(title="Jazz Lick Lab API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["GET", "POST", "PUT"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")

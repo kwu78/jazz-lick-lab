@@ -74,6 +74,7 @@ def _multipart_body(
 def _request(
     method: str, path: str, *, body: bytes | None = None,
     headers: dict[str, str] | None = None,
+    timeout: int = 120,
 ) -> bytes:
     """Authenticated Klangio API request → raw response bytes."""
     url = f"{_base_url}{path}"
@@ -83,7 +84,7 @@ def _request(
 
     req = urllib.request.Request(url, data=body, method=method, headers=hdrs)
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read()
     except urllib.error.HTTPError as exc:
         err = exc.read().decode(errors="replace")
@@ -103,8 +104,47 @@ def _get_json(path: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Instrument → stem mapping
+# ---------------------------------------------------------------------------
+
+_STEM_MAP: dict[str, tuple[str, str]] = {
+    # instrument → (stem_type, separation_model)
+    "bass":    ("bass",    "four-stems"),
+    "piano":   ("piano",   "six-stems"),
+    "guitar":  ("guitar",  "six-stems"),
+    "vocals":  ("vocals",  "four-stems"),
+    "drums":   ("drums",   "four-stems"),
+}
+
+
+def _instrument_to_stem(instrument: str) -> tuple[str, str] | None:
+    """Return (stem_type, separation_model) or None if separation not needed."""
+    return _STEM_MAP.get(instrument.lower())
+
+
+# ---------------------------------------------------------------------------
 # Core Klangio API functions
 # ---------------------------------------------------------------------------
+
+def _submit_source_separation(audio_path: str, model: str = "four-stems") -> str:
+    """Upload audio and create a Klangio source separation job. Returns job_id."""
+    body, ct = _multipart_body(audio_path)
+    sep_model = urllib.parse.quote(model)
+    data = _post_json(f"/source-separation?model={sep_model}&output=wav", body, ct)
+
+    job_id = data.get("job_id")
+    if not job_id:
+        raise RuntimeError(f"Klangio source-separation did not return job_id: {list(data.keys())}")
+
+    logger.info("Klangio source-separation job submitted: %s (model=%s)", job_id, model)
+    return str(job_id)
+
+
+def _fetch_stem_audio(klangio_job_id: str, stem_type: str) -> bytes:
+    """Download a separated stem as raw audio bytes."""
+    stem = urllib.parse.quote(stem_type)
+    return _request("GET", f"/job/{klangio_job_id}/audio?stem_type={stem}")
+
 
 def submit_transcription(audio_path: str) -> str:
     """Upload audio and create a Klangio transcription job. Returns job_id."""
@@ -267,19 +307,43 @@ def adapt_klangio_json_to_transcription_result(
 def transcribe(audio_path: str, instrument: str) -> dict:
     """Full Klangio transcription pipeline.
 
-    Submits a transcription job (notes) and a chord recognition job,
-    polls both to completion, fetches results, and returns a dict
-    matching our TranscriptionResult schema.
+    If the instrument maps to a known stem, runs source separation first,
+    then transcribes the isolated stem. Otherwise transcribes the original audio.
+
+    Pipeline: [source separation] → transcription + chord recognition → adapt.
     """
     logger.info(
         "Starting Klangio transcription: audio_path=%s instrument=%s",
         audio_path, instrument,
     )
 
-    # 1. Submit transcription job
-    transcription_id = submit_transcription(audio_path)
+    # 0. Source separation (if instrument maps to a stem)
+    transcribe_path = audio_path
+    stem_info = _instrument_to_stem(instrument)
+    if stem_info:
+        stem_type, sep_model = stem_info
+        logger.info("Running source separation: stem=%s model=%s", stem_type, sep_model)
+        sep_id = _submit_source_separation(audio_path, model=sep_model)
+        sep_status, sep_err = _poll_until_terminal(sep_id, "source-separation")
+        if sep_status != "COMPLETED":
+            raise RuntimeError(
+                f"Source separation failed: {sep_err or sep_status}"
+            )
+        # Download the stem and save next to the original audio
+        stem_bytes = _fetch_stem_audio(sep_id, stem_type)
+        stem_path = str(Path(audio_path).parent / f"stem_{stem_type}.wav")
+        with open(stem_path, "wb") as f:
+            f.write(stem_bytes)
+        logger.info("Stem saved: %s (%d bytes)", stem_path, len(stem_bytes))
+        transcribe_path = stem_path
+    else:
+        logger.info("No source separation needed for instrument=%s", instrument)
 
-    # 2. Submit chord recognition (best-effort; failure → empty chords)
+    # 1. Submit transcription job (on stem or original)
+    transcription_id = submit_transcription(transcribe_path)
+
+    # 2. Submit chord recognition on ORIGINAL audio (best-effort)
+    #    Chords are best detected from the full mix, not an isolated stem.
     chord_id: str | None = None
     try:
         chord_id = _submit_chord_recognition(audio_path)
