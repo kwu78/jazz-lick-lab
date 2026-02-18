@@ -18,3 +18,6 @@ class ChordEvent(BaseModel):
 class TranscriptionResult(BaseModel):
     notes: List[NoteEvent]
     chords: List[ChordEvent]
+    tempo_bpm: Optional[float] = None
+    time_signature: Optional[str] = None
+    audio_offset_sec: Optional[float] = None

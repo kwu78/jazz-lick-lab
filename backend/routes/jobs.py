@@ -35,7 +35,7 @@ from schemas.transcription import TranscriptionResult, NoteEvent, ChordEvent
 from schemas.transpose import TransposeRequest, TransposeResponse
 from services.analysis import compute_coverage, detect_ii_v_i
 from services.coach_factory import get_coach_provider
-from services.musicxml import generate_musicxml
+from services.musicxml import cleanup_notes_for_notation, generate_musicxml
 from services.practice_pack import build_practice_pack
 from services.storage import save_audio
 from services.theory import (
@@ -754,9 +754,13 @@ def score_preview(
     start_sec: float = Query(...),
     end_sec: float = Query(...),
     key: str | None = Query(None),
+    grid: int = Query(16),
     db: Session = Depends(get_db),
 ):
     _validate_time_range(start_sec, end_sec)
+    if grid not in (8, 16):
+        raise HTTPException(status_code=400, detail="grid must be 8 or 16")
+
     job, transcription, job_settings = _load_ready_transcription_with_settings(job_id, db)
     offset = job_settings.offset_sec
 
@@ -766,9 +770,21 @@ def score_preview(
 
     notes, chords = _extract_lick(transcription, raw_start, raw_end)
 
-    # Shift extracted notes/chords to start near zero for a compact score
+    # Shift extracted notes/chords so they align to barline boundaries
     if notes or chords:
-        origin = raw_start - offset
+        bpm_for_align = job_settings.bpm or 120.0
+        ts_for_align = job_settings.time_signature or "4/4"
+        beats_per_measure = int(ts_for_align.split("/")[0])
+        beat_dur = 60.0 / bpm_for_align
+        measure_dur = beat_dur * beats_per_measure
+
+        # origin = nearest barline at or before the selection start (in display time)
+        # In display time, barlines fall at 0, measure_dur, 2*measure_dur, ...
+        # because offset (beat 1) maps to display_time=0.
+        display_start = start_sec  # query param is already display time
+        origin = math.floor(display_start / measure_dur) * measure_dur
+
+        # Shift: convert raw note times to display time, then subtract origin
         notes = [
             NoteEvent(
                 pitch_midi=n.pitch_midi,
@@ -785,6 +801,9 @@ def score_preview(
             )
             for c in chords
         ]
+
+    # Clean up note timing for readable notation
+    notes = cleanup_notes_for_notation(notes)
 
     # Transpose if key is provided
     if key:
@@ -821,7 +840,7 @@ def score_preview(
 
     bpm = job_settings.bpm or 120.0
     time_sig = job_settings.time_signature or "4/4"
-    xml = generate_musicxml(notes, chords, bpm=bpm, time_signature=time_sig)
+    xml = generate_musicxml(notes, chords, bpm=bpm, time_signature=time_sig, grid=grid)
 
     return Response(
         content=xml,

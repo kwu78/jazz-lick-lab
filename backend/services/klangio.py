@@ -160,6 +160,19 @@ def submit_transcription(audio_path: str) -> str:
     return str(job_id)
 
 
+def _submit_beat_tracking(audio_path: str) -> str:
+    """Upload audio and create a Klangio beat tracking job. Returns job_id."""
+    body, ct = _multipart_body(audio_path)
+    data = _post_json("/beat-tracking", body, ct)
+
+    job_id = data.get("job_id")
+    if not job_id:
+        raise RuntimeError("Klangio beat-tracking did not return job_id")
+
+    logger.info("Klangio beat-tracking job submitted: %s", job_id)
+    return str(job_id)
+
+
 def _submit_chord_recognition(audio_path: str) -> str:
     """Upload audio and create a Klangio chord recognition job. Returns job_id."""
     body, ct = _multipart_body(audio_path)
@@ -297,7 +310,14 @@ def adapt_klangio_json_to_transcription_result(
                 "end_sec": round(float(end), 4) if end is not None else None,
             })
 
-    return {"notes": notes, "chords": chords, "audio_offset": audio_offset}
+    return {
+        "notes": notes,
+        "chords": chords,
+        "audio_offset": audio_offset,
+        "tempo_bpm": tempo,
+        "time_signature": time_sig,
+        "audio_offset_sec": audio_offset,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -350,6 +370,13 @@ def transcribe(audio_path: str, instrument: str) -> dict:
     except Exception as exc:
         logger.warning("Chord recognition submission failed, continuing without: %s", exc)
 
+    # 2b. Submit beat tracking on ORIGINAL audio (best-effort)
+    beat_id: str | None = None
+    try:
+        beat_id = _submit_beat_tracking(audio_path)
+    except Exception as exc:
+        logger.warning("Beat tracking submission failed, continuing without: %s", exc)
+
     # 3. Poll transcription to completion
     status, error_msg = _poll_until_terminal(transcription_id, "transcription")
     if status == "FAILED":
@@ -375,12 +402,33 @@ def transcribe(audio_path: str, instrument: str) -> dict:
         except Exception as exc:
             logger.warning("Chord recognition failed, continuing without: %s", exc)
 
+    # 5b. Poll + fetch beat tracking (best-effort)
+    beat_payload: list | None = None
+    if beat_id is not None:
+        try:
+            beat_status, beat_err = _poll_until_terminal(beat_id, "beat-tracking")
+            if beat_status == "COMPLETED":
+                beat_payload = fetch_result_json(beat_id)
+            else:
+                logger.warning(
+                    "Beat tracking ended with status: %s (%s)",
+                    beat_status, beat_err,
+                )
+        except Exception as exc:
+            logger.warning("Beat tracking failed, continuing without: %s", exc)
+
     # 6. Adapt to our schema and return
     result = adapt_klangio_json_to_transcription_result(
         transcription_payload, chord_payload
     )
+
+    # Include beat tracking data if available
+    if beat_payload is not None:
+        result["beat_tracking"] = beat_payload
+
     logger.info(
-        "Transcription complete: %d notes, %d chords",
+        "Transcription complete: %d notes, %d chords, beat_tracking=%s",
         len(result["notes"]), len(result["chords"]),
+        "yes" if beat_payload else "no",
     )
     return result

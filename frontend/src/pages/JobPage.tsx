@@ -5,18 +5,31 @@ import Panel from "../components/Panel";
 import ErrorBox from "../components/ErrorBox";
 import Waveform, { type WaveformHandle } from "../components/Waveform";
 import ScoreViewer from "../components/ScoreViewer";
+import SettingsPanel from "../components/SettingsPanel";
 import SelectionPanel from "../components/SelectionPanel";
 import AnalysisPanel from "../components/AnalysisPanel";
 import CoachingPanel from "../components/CoachingPanel";
 import PracticePackPanel from "../components/PracticePackPanel";
 import Button from "../components/Button";
-import { getJob, getAudioUrl, type Job, type Selection } from "../api/jobs";
+import {
+  getJob,
+  getAudioUrl,
+  type Job,
+  type Selection,
+  type JobSettings,
+} from "../api/jobs";
 import { BASE_URL } from "../api/client";
 
 const ALL_KEYS = [
   "C", "Db", "D", "Eb", "E", "F",
   "F#", "G", "Ab", "A", "Bb", "B",
 ];
+
+const DEFAULT_SETTINGS: JobSettings = {
+  bpm: null,
+  offset_sec: 0,
+  time_signature: "4/4",
+};
 
 export default function JobPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -30,6 +43,10 @@ export default function JobPage() {
   const [previewKey, setPreviewKey] = useState("C");
   const waveformRef = useRef<WaveformHandle>(null);
 
+  // Settings state
+  const [settings, setSettings] = useState<JobSettings>(DEFAULT_SETTINGS);
+  const [settingsVersion, setSettingsVersion] = useState(0);
+
   // Poll job status
   useEffect(() => {
     if (!jobId) return;
@@ -41,6 +58,17 @@ export default function JobPage() {
           const j = await getJob(jobId!);
           if (!active) break;
           setJob(j);
+          // Initialize settings from job response
+          if (j.status === "READY") {
+            const s = (j as Record<string, unknown>).settings as JobSettings | null;
+            if (s) {
+              setSettings({
+                bpm: s.bpm ?? null,
+                offset_sec: s.offset_sec ?? 0,
+                time_signature: s.time_signature ?? "4/4",
+              });
+            }
+          }
           if (j.status === "READY" || j.status === "FAILED") break;
         } catch (err) {
           if (!active) break;
@@ -68,6 +96,16 @@ export default function JobPage() {
     }
   }, [regionStart, regionEnd]);
 
+  const handleSettingsSaved = useCallback((saved: JobSettings) => {
+    setSettings(saved);
+    setSettingsVersion((v) => v + 1);
+  }, []);
+
+  const getWaveformTime = useCallback(
+    () => waveformRef.current?.getCurrentTime() ?? 0,
+    []
+  );
+
   // Debounced score preview URL — only update after region stops changing
   const [debouncedRegion, setDebouncedRegion] = useState<{
     start: number;
@@ -92,8 +130,12 @@ export default function JobPage() {
       end_sec: debouncedRegion.end.toFixed(2),
       key: previewKey,
     });
+    // settingsVersion forces refetch when settings change
+    if (settingsVersion > 0) {
+      params.set("_v", settingsVersion.toString());
+    }
     return `${BASE_URL}/jobs/${jobId}/score-preview?${params}`;
-  }, [debouncedRegion, previewKey, jobId]);
+  }, [debouncedRegion, previewKey, jobId, settingsVersion]);
 
   if (!jobId) return null;
 
@@ -105,6 +147,11 @@ export default function JobPage() {
     FAILED: "Failed",
   };
   const hasRegion = regionStart != null && regionEnd != null;
+
+  // Parse beats per measure from time signature
+  const beatsPerMeasure = settings.time_signature
+    ? parseInt(settings.time_signature.split("/")[0], 10) || 4
+    : 4;
 
   return (
     <PageShell>
@@ -135,6 +182,9 @@ export default function JobPage() {
               ref={waveformRef}
               audioUrl={getAudioUrl(jobId)}
               onRegionChange={handleRegionChange}
+              bpm={settings.bpm ?? undefined}
+              offsetSec={settings.offset_sec}
+              beatsPerMeasure={beatsPerMeasure}
             />
             <div className="mt-3 flex items-center gap-3">
               <Button
@@ -151,6 +201,13 @@ export default function JobPage() {
               )}
             </div>
           </Panel>
+
+          <SettingsPanel
+            jobId={jobId}
+            initialSettings={settings}
+            getCurrentTime={getWaveformTime}
+            onSaved={handleSettingsSaved}
+          />
 
           {/* Score Preview */}
           <Panel title="Score Preview">

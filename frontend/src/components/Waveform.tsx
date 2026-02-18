@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef, useMemo } from "react";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin, { type Region } from "wavesurfer.js/dist/plugins/regions.js";
 import Button from "./Button";
@@ -6,14 +6,18 @@ import Button from "./Button";
 interface Props {
   audioUrl: string;
   onRegionChange?: (start: number, end: number) => void;
+  bpm?: number;
+  offsetSec?: number;
+  beatsPerMeasure?: number;
 }
 
 export interface WaveformHandle {
   playRegion: (start: number, end: number) => void;
+  getCurrentTime: () => number;
 }
 
 const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
-  { audioUrl, onRegionChange },
+  { audioUrl, onRegionChange, bpm, offsetSec = 0, beatsPerMeasure = 4 },
   ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,6 +26,7 @@ const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
   const activeRegionRef = useRef<Region | null>(null);
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
+  const [duration, setDuration] = useState(0);
   const [regionTimes, setRegionTimes] = useState<{
     start: number;
     end: number;
@@ -41,7 +46,6 @@ const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
       if (!ws) return;
       ws.setTime(start);
       ws.play();
-      // Stop at end
       const onTime = () => {
         if (ws.getCurrentTime() >= end) {
           ws.pause();
@@ -49,6 +53,9 @@ const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
         }
       };
       ws.on("timeupdate", onTime);
+    },
+    getCurrentTime() {
+      return wsRef.current?.getCurrentTime() ?? 0;
     },
   }));
 
@@ -74,6 +81,7 @@ const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
 
     ws.on("ready", () => {
       setReady(true);
+      setDuration(ws.getDuration());
       const dur = ws.getDuration();
       const r = regions.addRegion({
         start: dur * 0.2,
@@ -98,12 +106,57 @@ const Waveform = forwardRef<WaveformHandle, Props>(function Waveform(
     };
   }, [audioUrl, emitRegion]);
 
+  // Beat grid lines
+  const beatLines = useMemo(() => {
+    if (!bpm || bpm <= 0 || duration <= 0) return [];
+    const beatSec = 60 / bpm;
+    const lines: { pct: number; isMeasure: boolean }[] = [];
+    let beatIndex = 0;
+    let t = offsetSec;
+    // Start from first beat at or after 0
+    if (t < 0) {
+      const skip = Math.ceil(-t / beatSec);
+      t += skip * beatSec;
+      beatIndex += skip;
+    }
+    while (t <= duration) {
+      if (t >= 0) {
+        lines.push({
+          pct: (t / duration) * 100,
+          isMeasure: beatIndex % beatsPerMeasure === 0,
+        });
+      }
+      t += beatSec;
+      beatIndex++;
+    }
+    return lines;
+  }, [bpm, offsetSec, beatsPerMeasure, duration]);
+
   return (
     <div>
-      <div
-        ref={containerRef}
-        className="border border-border rounded mb-3"
-      />
+      <div className="relative">
+        <div
+          ref={containerRef}
+          className="border border-border rounded mb-3"
+        />
+        {beatLines.length > 0 && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden mb-3">
+            {beatLines.map((line, i) => (
+              <div
+                key={i}
+                className="absolute top-0 bottom-0"
+                style={{
+                  left: `${line.pct}%`,
+                  width: "1px",
+                  backgroundColor: line.isMeasure
+                    ? "rgba(17,17,17,0.4)"
+                    : "rgba(17,17,17,0.15)",
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-3">
         <Button
           variant="secondary"

@@ -5,6 +5,7 @@ rendering in MuseScore, Flat.io, or similar score viewers.
 """
 
 import xml.etree.ElementTree as ET
+from typing import Literal
 
 from services.theory import parse_chord_root
 
@@ -12,7 +13,10 @@ from services.theory import parse_chord_root
 # Constants
 # ---------------------------------------------------------------------------
 
-DIVISIONS_PER_BEAT = 4  # 16th-note grid resolution
+GridSize = Literal[8, 16]
+
+# Divisions per beat for each grid: 8th=2, 16th=8 (32nd-note resolution)
+_GRID_DIVISIONS: dict[int, int] = {8: 2, 16: 8}
 
 # MIDI pitch class → (step, alter) — prefer flats for jazz
 _PITCH_MAP: list[tuple[str, int]] = [
@@ -21,13 +25,26 @@ _PITCH_MAP: list[tuple[str, int]] = [
 ]
 
 # Duration (in divisions) → (type_name, dotted)
-_TYPE_MAP: dict[int, tuple[str, bool]] = {
-    1: ("16th", False), 2: ("eighth", False), 3: ("eighth", True),
-    4: ("quarter", False), 6: ("quarter", True), 8: ("half", False),
-    12: ("half", True), 16: ("whole", False),
+# Grid=16: divisions_per_beat=8, so 8 divs = quarter (32nd-note resolution)
+_TYPE_MAP_16: dict[int, tuple[str, bool]] = {
+    1: ("32nd", False), 2: ("16th", False), 3: ("16th", True),
+    4: ("eighth", False), 6: ("eighth", True), 8: ("quarter", False),
+    12: ("quarter", True), 16: ("half", False), 24: ("half", True),
+    32: ("whole", False),
+}
+# Grid=8: divisions_per_beat=2, so 2 divs = quarter
+_TYPE_MAP_8: dict[int, tuple[str, bool]] = {
+    1: ("eighth", False), 2: ("quarter", False), 3: ("quarter", True),
+    4: ("half", False), 6: ("half", True), 8: ("whole", False),
 }
 
-_VALID_DURATIONS = sorted(_TYPE_MAP.keys())
+_VALID_DURATIONS_16 = sorted(_TYPE_MAP_16.keys())
+_VALID_DURATIONS_8 = sorted(_TYPE_MAP_8.keys())
+
+def _get_type_map(grid: int) -> tuple[dict[int, tuple[str, bool]], list[int]]:
+    if grid == 8:
+        return _TYPE_MAP_8, _VALID_DURATIONS_8
+    return _TYPE_MAP_16, _VALID_DURATIONS_16
 
 # Chord root name → MusicXML (root-step, root-alter)
 _ROOT_STEP_ALTER: dict[str, tuple[str, int]] = {
@@ -61,6 +78,71 @@ _QUALITY_TO_KIND: list[tuple[str, str]] = [
 
 
 # ---------------------------------------------------------------------------
+# Pre-processing: timing cleanup
+# ---------------------------------------------------------------------------
+
+def cleanup_notes_for_notation(
+    notes: list,
+    min_dur: float = 0.06,
+    merge_gap: float = 0.06,
+    snap_sec: float = 0.02,
+) -> list:
+    """Clean up raw transcription notes for readable notation.
+
+    - Drop very short notes (< min_dur)
+    - Merge adjacent same-pitch notes with tiny gaps
+    - Snap start/duration to a fine grid to remove micro-jitter
+    """
+    from schemas.transcription import NoteEvent
+
+    # Sort by start time, then pitch
+    sorted_notes = sorted(notes, key=lambda n: (n.start_sec, n.pitch_midi))
+
+    # Drop tiny notes
+    filtered = [n for n in sorted_notes if n.duration_sec >= min_dur]
+
+    # Merge adjacent same-pitch notes
+    merged: list[NoteEvent] = []
+    for n in filtered:
+        if merged:
+            prev = merged[-1]
+            prev_end = prev.start_sec + prev.duration_sec
+            if (
+                n.pitch_midi == prev.pitch_midi
+                and n.start_sec <= prev_end + merge_gap
+            ):
+                new_end = max(prev_end, n.start_sec + n.duration_sec)
+                merged[-1] = NoteEvent(
+                    pitch_midi=prev.pitch_midi,
+                    start_sec=prev.start_sec,
+                    duration_sec=new_end - prev.start_sec,
+                )
+                continue
+        merged.append(n)
+
+    # Snap to fine grid
+    result = []
+    for n in merged:
+        s = round(n.start_sec / snap_sec) * snap_sec
+        d = round(n.duration_sec / snap_sec) * snap_sec
+        d = max(snap_sec, d)
+        result.append(NoteEvent(pitch_midi=n.pitch_midi, start_sec=s, duration_sec=d))
+
+    # Swallow small gaps: extend previous note to close tiny gaps
+    for i in range(len(result) - 1):
+        prev_end = result[i].start_sec + result[i].duration_sec
+        gap = result[i + 1].start_sec - prev_end
+        if 0 < gap < 0.04:
+            result[i] = NoteEvent(
+                pitch_midi=result[i].pitch_midi,
+                start_sec=result[i].start_sec,
+                duration_sec=result[i].duration_sec + gap,
+            )
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -78,16 +160,16 @@ def _midi_to_pitch(midi: int) -> tuple[str, int, int]:
     return step, alter, octave
 
 
-def _snap_duration(div: int) -> int:
+def _snap_duration(div: int, valid: list[int]) -> int:
     if div <= 0:
         return 1
-    return min(_VALID_DURATIONS, key=lambda d: abs(d - div))
+    return min(valid, key=lambda d: abs(d - div))
 
 
-def _type_for_duration(div: int) -> tuple[str, bool]:
-    if div in _TYPE_MAP:
-        return _TYPE_MAP[div]
-    return _TYPE_MAP[min(_VALID_DURATIONS, key=lambda d: abs(d - div))]
+def _type_for_duration(div: int, type_map: dict[int, tuple[str, bool]], valid: list[int]) -> tuple[str, bool]:
+    if div in type_map:
+        return type_map[div]
+    return type_map[min(valid, key=lambda d: abs(d - div))]
 
 
 def _parse_chord_kind(symbol: str) -> tuple[str, int, str, str]:
@@ -109,6 +191,105 @@ def _parse_chord_kind(symbol: str) -> tuple[str, int, str, str]:
 
 
 # ---------------------------------------------------------------------------
+# Beaming
+# ---------------------------------------------------------------------------
+
+def _compute_beaming(
+    voice_events: list[tuple[int, int]],
+    divs_per_beat: int,
+    type_map: dict[int, tuple[str, bool]],
+    valid: list[int],
+) -> dict[int, list[tuple[int, str]]]:
+    """Compute beam assignments for notes in a measure.
+
+    voice_events: [(offset_in_measure, clamped_dur_divs), ...] in order.
+    Returns dict mapping note offset → [(beam_number, beam_value), ...].
+    Only offsets that participate in a beam group are included.
+    """
+    _beamable = frozenset({"eighth", "16th", "32nd"})
+    _sub_beam = frozenset({"16th", "32nd"})
+
+    # Annotate each event
+    ann = []
+    for off, dur in voice_events:
+        tname, _ = _type_for_duration(dur, type_map, valid)
+        ann.append({
+            "off": off, "dur": dur, "type": tname,
+            "beat": off // divs_per_beat,
+            "beamable": tname in _beamable,
+            "sub": tname in _sub_beam,
+        })
+
+    # --- Beam-1 groups: consecutive beamable notes, same beat, no rest gap --
+    groups: list[list[int]] = []
+    cur: list[int] = []
+    for i, ev in enumerate(ann):
+        if ev["beamable"]:
+            if cur:
+                prev = ann[cur[-1]]
+                if prev["beat"] == ev["beat"] and prev["off"] + prev["dur"] >= ev["off"]:
+                    cur.append(i)
+                else:
+                    if len(cur) >= 2:
+                        groups.append(cur)
+                    cur = [i]
+            else:
+                cur = [i]
+        else:
+            if len(cur) >= 2:
+                groups.append(cur)
+            cur = []
+    if len(cur) >= 2:
+        groups.append(cur)
+
+    result: dict[int, list[tuple[int, str]]] = {}
+
+    for group in groups:
+        # Beam 1: begin / continue / end
+        for gi, idx in enumerate(group):
+            off = ann[idx]["off"]
+            if gi == 0:
+                result[off] = [(1, "begin")]
+            elif gi == len(group) - 1:
+                result[off] = [(1, "end")]
+            else:
+                result[off] = [(1, "continue")]
+
+        # Beam 2: sub-runs of 16th/32nd within the group
+        sub_runs: list[list[int]] = []
+        cur_sub: list[int] = []
+        for gi, idx in enumerate(group):
+            if ann[idx]["sub"]:
+                cur_sub.append(gi)
+            else:
+                if cur_sub:
+                    sub_runs.append(cur_sub)
+                cur_sub = []
+        if cur_sub:
+            sub_runs.append(cur_sub)
+
+        for run in sub_runs:
+            if len(run) >= 2:
+                for si, gi in enumerate(run):
+                    off = ann[group[gi]]["off"]
+                    if si == 0:
+                        result[off].append((2, "begin"))
+                    elif si == len(run) - 1:
+                        result[off].append((2, "end"))
+                    else:
+                        result[off].append((2, "continue"))
+            else:
+                gi = run[0]
+                off = ann[group[gi]]["off"]
+                if gi == 0:
+                    result[off].append((2, "forward-hook"))
+                else:
+                    result[off].append((2, "backward-hook"))
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # XML emitters
 # ---------------------------------------------------------------------------
 
@@ -125,10 +306,13 @@ def _emit_harmony(measure: ET.Element, symbol: str) -> None:
 
 
 def _emit_note(
-    measure: ET.Element, midi: int, dur_div: int, is_chord: bool = False
+    measure: ET.Element, midi: int, dur_div: int,
+    type_map: dict, valid: list, is_chord: bool = False,
+    tie_start: bool = False, tie_stop: bool = False,
+    beams: list[tuple[int, str]] | None = None,
 ) -> None:
     step, alter, octave = _midi_to_pitch(midi)
-    type_name, dotted = _type_for_duration(dur_div)
+    type_name, dotted = _type_for_duration(dur_div, type_map, valid)
     note = _sub(measure, "note")
     if is_chord:
         _sub(note, "chord")
@@ -138,21 +322,34 @@ def _emit_note(
         _sub(pitch, "alter", str(alter))
     _sub(pitch, "octave", str(octave))
     _sub(note, "duration", str(dur_div))
+    if tie_stop:
+        _sub(note, "tie", type="stop")
+    if tie_start:
+        _sub(note, "tie", type="start")
     _sub(note, "type", type_name)
     if dotted:
         _sub(note, "dot")
+    if beams:
+        for beam_num, beam_val in beams:
+            _sub(note, "beam", beam_val, number=str(beam_num))
+    if tie_start or tie_stop:
+        notations = _sub(note, "notations")
+        if tie_stop:
+            _sub(notations, "tied", type="stop")
+        if tie_start:
+            _sub(notations, "tied", type="start")
 
 
-def _emit_rests(measure: ET.Element, dur_div: int) -> None:
+def _emit_rests(measure: ET.Element, dur_div: int, type_map: dict, valid: list) -> None:
     """Emit one or more rests totalling dur_div divisions."""
     remaining = dur_div
     while remaining > 0:
         best = 1
-        for d in reversed(_VALID_DURATIONS):
+        for d in reversed(valid):
             if d <= remaining:
                 best = d
                 break
-        type_name, dotted = _type_for_duration(best)
+        type_name, dotted = _type_for_duration(best, type_map, valid)
         note = _sub(measure, "note")
         _sub(note, "rest")
         _sub(note, "duration", str(best))
@@ -167,6 +364,8 @@ def _emit_rests_with_chords(
     start: int,
     duration: int,
     chord_lookup: dict[int, str],
+    type_map: dict,
+    valid: list,
 ) -> None:
     """Emit rests over [start, start+duration), inserting chord harmonies."""
     end = start + duration
@@ -175,12 +374,12 @@ def _emit_rests_with_chords(
     cursor = start
     for co in chord_offsets:
         if co > cursor:
-            _emit_rests(measure, co - cursor)
+            _emit_rests(measure, co - cursor, type_map, valid)
         _emit_harmony(measure, chord_lookup[co])
         cursor = co
 
     if cursor < end:
-        _emit_rests(measure, end - cursor)
+        _emit_rests(measure, end - cursor, type_map, valid)
 
 
 # ---------------------------------------------------------------------------
@@ -192,6 +391,7 @@ def generate_musicxml(
     chords: list,
     bpm: float = 120.0,
     time_signature: str = "4/4",
+    grid: int = 16,
 ) -> str:
     """Generate a MusicXML string from note and chord events.
 
@@ -200,27 +400,31 @@ def generate_musicxml(
         chords: List of ChordEvent (symbol, start_sec, end_sec).
         bpm: Tempo in beats per minute.
         time_signature: Time signature as "N/D" (e.g. "4/4").
+        grid: Quantization grid — 8 (eighth-note) or 16 (sixteenth-note).
 
     Returns:
         UTF-8 MusicXML string.
     """
+    divs_per_beat = _GRID_DIVISIONS.get(grid, 4)
+    type_map, valid = _get_type_map(grid)
+
     ts_parts = time_signature.split("/")
     beats_per_measure = int(ts_parts[0])
     beat_type = int(ts_parts[1])
-    divs_per_measure = beats_per_measure * DIVISIONS_PER_BEAT
+    divs_per_measure = beats_per_measure * divs_per_beat
     beat_dur = 60.0 / bpm
 
     # --- Quantise to grid ---------------------------------------------------
     note_grid: list[tuple[int, int, int]] = []
     for n in notes:
-        s = max(0, round(n.start_sec / beat_dur * DIVISIONS_PER_BEAT))
-        d = max(1, round(n.duration_sec / beat_dur * DIVISIONS_PER_BEAT))
+        s = max(0, round(n.start_sec / beat_dur * divs_per_beat))
+        d = max(1, round(n.duration_sec / beat_dur * divs_per_beat))
         note_grid.append((s, d, n.pitch_midi))
     note_grid.sort(key=lambda x: (x[0], x[2]))
 
     chord_grid: list[tuple[int, str]] = []
     for c in chords:
-        s = max(0, round(c.start_sec / beat_dur * DIVISIONS_PER_BEAT))
+        s = max(0, round(c.start_sec / beat_dur * divs_per_beat))
         chord_grid.append((s, c.symbol))
     chord_grid.sort()
 
@@ -232,13 +436,24 @@ def generate_musicxml(
         max_div = max(max_div, max(s for s, _ in chord_grid) + 1)
     num_measures = max(1, -(-max_div // divs_per_measure))
 
-    # --- Group events by measure --------------------------------------------
-    notes_by_m: dict[int, list[tuple[int, int, int]]] = {}
+    # --- Group events by measure (split notes across barlines with ties) -----
+    notes_by_m: dict[int, list[tuple[int, int, int, bool, bool]]] = {}
     for s, d, midi in note_grid:
-        mi = s // divs_per_measure
-        off = s % divs_per_measure
-        d = min(d, divs_per_measure - off)
-        notes_by_m.setdefault(mi, []).append((off, d, midi))
+        remaining = d
+        cur_pos = s
+        is_first = True
+        while remaining > 0:
+            mi = cur_pos // divs_per_measure
+            off = cur_pos % divs_per_measure
+            space = divs_per_measure - off
+            chunk = min(remaining, space)
+            is_last = (remaining - chunk) <= 0
+            t_start = not is_last
+            t_stop = not is_first
+            notes_by_m.setdefault(mi, []).append((off, chunk, midi, t_start, t_stop))
+            cur_pos += chunk
+            remaining -= chunk
+            is_first = False
 
     chords_by_m: dict[int, dict[int, str]] = {}
     for s, sym in chord_grid:
@@ -259,7 +474,7 @@ def generate_musicxml(
         # First measure: attributes + tempo
         if mi == 0:
             attrs = _sub(measure, "attributes")
-            _sub(attrs, "divisions", str(DIVISIONS_PER_BEAT))
+            _sub(attrs, "divisions", str(divs_per_beat))
             te = _sub(attrs, "time")
             _sub(te, "beats", str(beats_per_measure))
             _sub(te, "beat-type", str(beat_type))
@@ -277,19 +492,30 @@ def generate_musicxml(
         m_chords = chords_by_m.get(mi, {})
 
         # Group notes by offset
-        by_offset: dict[int, list[tuple[int, int]]] = {}
-        for off, dur, midi in m_notes:
-            by_offset.setdefault(off, []).append((dur, midi))
+        by_offset: dict[int, list[tuple[int, int, bool, bool]]] = {}
+        for off, dur, midi, t_start, t_stop in m_notes:
+            by_offset.setdefault(off, []).append((dur, midi, t_start, t_stop))
 
         # All event positions (notes + chords)
         event_offsets = sorted(set(by_offset.keys()) | set(m_chords.keys()))
+
+        # Pre-compute beaming for this measure
+        voice_events: list[tuple[int, int]] = []
+        for v_off in sorted(by_offset.keys()):
+            nlist_v = by_offset[v_off]
+            v_dur = min(nlist_v[0][0], divs_per_measure - v_off)
+            v_dur = _snap_duration(v_dur, valid)
+            if v_dur > divs_per_measure - v_off:
+                v_dur = max(1, divs_per_measure - v_off)
+            voice_events.append((v_off, v_dur))
+        beam_map = _compute_beaming(voice_events, divs_per_beat, type_map, valid)
 
         cursor = 0
         for off in event_offsets:
             if off < cursor:
                 continue
             if off > cursor:
-                _emit_rests_with_chords(measure, cursor, off - cursor, m_chords)
+                _emit_rests_with_chords(measure, cursor, off - cursor, m_chords, type_map, valid)
                 cursor = off
 
             if off in m_chords:
@@ -297,20 +523,23 @@ def generate_musicxml(
 
             if off in by_offset:
                 nlist = by_offset[off]
-                for i, (dur, midi) in enumerate(nlist):
+                beams = beam_map.get(off)
+                for i, (dur, midi, t_start, t_stop) in enumerate(nlist):
                     clamped = min(dur, divs_per_measure - off)
-                    clamped = _snap_duration(clamped)
+                    clamped = _snap_duration(clamped, valid)
                     if clamped > divs_per_measure - off:
                         clamped = max(1, divs_per_measure - off)
-                    _emit_note(measure, midi, clamped, is_chord=(i > 0))
+                    _emit_note(measure, midi, clamped, type_map, valid,
+                               is_chord=(i > 0), tie_start=t_start, tie_stop=t_stop,
+                               beams=beams)
                 first_dur = min(nlist[0][0], divs_per_measure - off)
-                first_dur = _snap_duration(first_dur)
+                first_dur = _snap_duration(first_dur, valid)
                 cursor = min(off + first_dur, divs_per_measure)
 
         if cursor < divs_per_measure:
             if cursor in m_chords and cursor not in by_offset:
                 _emit_harmony(measure, m_chords[cursor])
-            _emit_rests_with_chords(measure, cursor, divs_per_measure - cursor, m_chords)
+            _emit_rests_with_chords(measure, cursor, divs_per_measure - cursor, m_chords, type_map, valid)
 
     # --- Serialise ----------------------------------------------------------
     ET.indent(root, space="  ")

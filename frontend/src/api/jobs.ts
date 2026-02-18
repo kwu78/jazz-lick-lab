@@ -63,6 +63,12 @@ export interface PracticePackArtifact {
   created_at: string;
 }
 
+export interface JobSettings {
+  bpm: number | null;
+  offset_sec: number;
+  time_signature: string | null;
+}
+
 /* ── API calls ─────────────────────────────────────── */
 
 export async function createJob(file: File, instrument?: string): Promise<Job> {
@@ -133,4 +139,19 @@ export function downloadPracticePackUrl(
   artifactId: string
 ): string {
   return `${BASE_URL}/jobs/${jobId}/practice-pack/${artifactId}/download`;
+}
+
+export async function saveSettings(
+  jobId: string,
+  settings: Partial<JobSettings>
+): Promise<JobSettings> {
+  const res = await apiFetch<{ job_id: string; settings: JobSettings }>(
+    `/jobs/${jobId}/settings`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+    }
+  );
+  return res.settings;
 }
