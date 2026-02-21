@@ -148,7 +148,7 @@ def _fetch_stem_audio(klangio_job_id: str, stem_type: str) -> bytes:
 
 def submit_transcription(audio_path: str) -> str:
     """Upload audio and create a Klangio transcription job. Returns job_id."""
-    body, ct = _multipart_body(audio_path, extra_fields={"outputs": "midi"})
+    body, ct = _multipart_body(audio_path, extra_fields={"outputs": "midi,mxml,pdf"})
     model = urllib.parse.quote(_model)
     data = _post_json(f"/transcription?model={model}", body, ct)
 
@@ -200,6 +200,16 @@ def fetch_result_json(klangio_job_id: str) -> dict:
     """Download JSON result for a completed Klangio job."""
     raw = _request("GET", f"/job/{klangio_job_id}/json")
     return json.loads(raw)
+
+
+def fetch_job_xml(klangio_job_id: str) -> bytes:
+    """Download MusicXML result for a completed Klangio job."""
+    return _request("GET", f"/job/{klangio_job_id}/xml")
+
+
+def fetch_job_pdf(klangio_job_id: str) -> bytes:
+    """Download PDF result for a completed Klangio job."""
+    return _request("GET", f"/job/{klangio_job_id}/pdf")
 
 
 def _poll_until_terminal(job_id: str, label: str) -> tuple[str, str | None]:
@@ -421,6 +431,9 @@ def transcribe(audio_path: str, instrument: str) -> dict:
     result = adapt_klangio_json_to_transcription_result(
         transcription_payload, chord_payload
     )
+
+    # Include Klangio job ID so callers can fetch additional artifacts (XML, etc.)
+    result["klangio_transcription_id"] = transcription_id
 
     # Include beat tracking data if available
     if beat_payload is not None:

@@ -5,12 +5,14 @@ from typing import Optional
 from pydantic import BaseModel, field_validator
 
 _TIME_SIG_RE = re.compile(r"^([1-9]\d*)/([1-9]\d*)$")
+_KEY_SIG_RE = re.compile(r"^[A-G][#b]?$")
 
 
 class JobSettings(BaseModel):
     bpm: Optional[float] = None
     offset_sec: float = 0.0
     time_signature: Optional[str] = None
+    key_signature: Optional[str] = None
 
     @field_validator("bpm")
     @classmethod
@@ -33,11 +35,19 @@ class JobSettings(BaseModel):
             raise ValueError("time_signature must match format 'N/D' (e.g. '4/4', '3/4')")
         return v
 
+    @field_validator("key_signature")
+    @classmethod
+    def key_signature_format(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not _KEY_SIG_RE.match(v):
+            raise ValueError("key_signature must be a note name like 'C', 'Bb', 'F#'")
+        return v
+
 
 class SettingsUpdateRequest(BaseModel):
     bpm: Optional[float] = None
     offset_sec: Optional[float] = None
     time_signature: Optional[str] = None
+    key_signature: Optional[str] = None
 
     @field_validator("bpm")
     @classmethod
@@ -58,6 +68,13 @@ class SettingsUpdateRequest(BaseModel):
     def time_signature_format(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and not _TIME_SIG_RE.match(v):
             raise ValueError("time_signature must match format 'N/D' (e.g. '4/4', '3/4')")
+        return v
+
+    @field_validator("key_signature")
+    @classmethod
+    def key_signature_format(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not _KEY_SIG_RE.match(v):
+            raise ValueError("key_signature must be a note name like 'C', 'Bb', 'F#'")
         return v
 
 

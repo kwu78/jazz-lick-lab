@@ -76,6 +76,35 @@ _QUALITY_TO_KIND: list[tuple[str, str]] = [
     ("6", "major-sixth"), ("", "major"),
 ]
 
+# Klangio colon-style quality → jazz lead-sheet suffix
+_KLANGIO_QUALITY: dict[str, str] = {
+    "maj": "", "min": "m", "dim": "dim", "aug": "aug",
+    "dom": "7", "hdim7": "m7b5", "min7": "m7", "maj7": "maj7",
+    "minmaj7": "mMaj7", "dim7": "dim7", "aug7": "aug7",
+    "sus4": "sus4", "sus2": "sus2", "min6": "m6", "maj6": "6",
+    "9": "9", "min9": "m9", "maj9": "maj9",
+    "11": "11", "min11": "m11", "13": "13",
+}
+
+# Sharp-root → flat enharmonic (jazz convention: prefer flats)
+_ENHARMONIC_FLAT: dict[str, str] = {
+    "C#": "Db", "D#": "Eb", "F#": "Gb", "G#": "Ab", "A#": "Bb",
+}
+
+
+def _normalize_chord_symbol(symbol: str) -> str:
+    """Normalise Klangio-style 'C:min' → 'Cm', prefer flats."""
+    if ":" in symbol:
+        root, quality = symbol.split(":", 1)
+        suffix = _KLANGIO_QUALITY.get(quality, quality)
+        symbol = root + suffix
+    # Prefer flat spellings for roots
+    for sharp, flat in _ENHARMONIC_FLAT.items():
+        if symbol.startswith(sharp):
+            symbol = flat + symbol[len(sharp):]
+            break
+    return symbol
+
 
 # ---------------------------------------------------------------------------
 # Pre-processing: timing cleanup
@@ -310,6 +339,7 @@ def _emit_note(
     type_map: dict, valid: list, is_chord: bool = False,
     tie_start: bool = False, tie_stop: bool = False,
     beams: list[tuple[int, str]] | None = None,
+    staff: int = 1,
 ) -> None:
     step, alter, octave = _midi_to_pitch(midi)
     type_name, dotted = _type_for_duration(dur_div, type_map, valid)
@@ -322,6 +352,7 @@ def _emit_note(
         _sub(pitch, "alter", str(alter))
     _sub(pitch, "octave", str(octave))
     _sub(note, "duration", str(dur_div))
+    _sub(note, "staff", str(staff))
     if tie_stop:
         _sub(note, "tie", type="stop")
     if tie_start:
@@ -392,6 +423,7 @@ def generate_musicxml(
     bpm: float = 120.0,
     time_signature: str = "4/4",
     grid: int = 16,
+    key_sig: str | None = None,
 ) -> str:
     """Generate a MusicXML string from note and chord events.
 
@@ -422,18 +454,15 @@ def generate_musicxml(
         note_grid.append((s, d, n.pitch_midi))
     note_grid.sort(key=lambda x: (x[0], x[2]))
 
-    chord_grid: list[tuple[int, str]] = []
-    for c in chords:
-        s = max(0, round(c.start_sec / beat_dur * divs_per_beat))
-        chord_grid.append((s, c.symbol))
-    chord_grid.sort()
-
     # --- Determine measure count --------------------------------------------
     max_div = 0
     if note_grid:
         max_div = max(s + d for s, d, _ in note_grid)
-    if chord_grid:
-        max_div = max(max_div, max(s for s, _ in chord_grid) + 1)
+    if chords:
+        last_chord_div = max(
+            max(0, round(c.start_sec / beat_dur * divs_per_beat)) for c in chords
+        )
+        max_div = max(max_div, last_chord_div + 1)
     num_measures = max(1, -(-max_div // divs_per_measure))
 
     # --- Group events by measure (split notes across barlines with ties) -----
@@ -455,17 +484,41 @@ def generate_musicxml(
             remaining -= chunk
             is_first = False
 
+    # --- One chord per measure (greatest overlap wins) -----------------------
+    measure_sec = beats_per_measure * beat_dur
+    chord_spans: list[tuple[float, float, str]] = []
+    for ci, c in enumerate(chords):
+        if c.symbol == "N":
+            continue
+        cs = c.start_sec
+        ce = c.end_sec if c.end_sec is not None else (
+            chords[ci + 1].start_sec if ci + 1 < len(chords) else cs + measure_sec
+        )
+        chord_spans.append((cs, ce, _normalize_chord_symbol(c.symbol)))
+
     chords_by_m: dict[int, dict[int, str]] = {}
-    for s, sym in chord_grid:
-        mi = s // divs_per_measure
-        off = s % divs_per_measure
-        chords_by_m.setdefault(mi, {})[off] = sym
+    for mi in range(num_measures):
+        ms = mi * measure_sec
+        me = ms + measure_sec
+        best_sym: str | None = None
+        best_overlap = 0.0
+        for cs, ce, sym in chord_spans:
+            overlap = max(0.0, min(ce, me) - max(cs, ms))
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best_sym = sym
+        if best_sym is not None:
+            chords_by_m[mi] = {0: best_sym}
 
     # --- Build XML tree -----------------------------------------------------
     root = ET.Element("score-partwise", version="4.0")
     part_list = _sub(root, "part-list")
+    pg_start = _sub(part_list, "part-group", type="start", number="1")
+    _sub(pg_start, "group-symbol", "brace")
+    _sub(pg_start, "group-barline", "yes")
     sp = _sub(part_list, "score-part", id="P1")
     _sub(sp, "part-name", "Music")
+    _sub(part_list, "part-group", type="stop", number="1")
     part = _sub(root, "part", id="P1")
 
     for mi in range(num_measures):
@@ -475,12 +528,20 @@ def generate_musicxml(
         if mi == 0:
             attrs = _sub(measure, "attributes")
             _sub(attrs, "divisions", str(divs_per_beat))
+            if key_sig is not None:
+                from services.theory import key_to_fifths
+                key_el = _sub(attrs, "key")
+                _sub(key_el, "fifths", str(key_to_fifths(key_sig)))
             te = _sub(attrs, "time")
             _sub(te, "beats", str(beats_per_measure))
             _sub(te, "beat-type", str(beat_type))
-            cl = _sub(attrs, "clef")
-            _sub(cl, "sign", "G")
-            _sub(cl, "line", "2")
+            _sub(attrs, "staves", "2")
+            cl1 = _sub(attrs, "clef", number="1")
+            _sub(cl1, "sign", "G")
+            _sub(cl1, "line", "2")
+            cl2 = _sub(attrs, "clef", number="2")
+            _sub(cl2, "sign", "F")
+            _sub(cl2, "line", "4")
             direction = _sub(measure, "direction", placement="above")
             dt = _sub(direction, "direction-type")
             metro = _sub(dt, "metronome")
@@ -531,7 +592,7 @@ def generate_musicxml(
                         clamped = max(1, divs_per_measure - off)
                     _emit_note(measure, midi, clamped, type_map, valid,
                                is_chord=(i > 0), tie_start=t_start, tie_stop=t_stop,
-                               beams=beams)
+                               beams=beams, staff=1 if midi >= 60 else 2)
                 first_dur = min(nlist[0][0], divs_per_measure - off)
                 first_dur = _snap_duration(first_dur, valid)
                 cursor = min(off + first_dur, divs_per_measure)

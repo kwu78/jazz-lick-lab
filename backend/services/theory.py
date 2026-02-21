@@ -62,3 +62,26 @@ def transpose_chord_symbol(symbol: str, interval: int) -> str:
     new_semitone = (old_semitone + interval) % 12
     new_root = SEMITONE_TO_NAME[new_semitone]
     return new_root + symbol[len(old_root):]
+
+
+# MusicXML key signature: key name ↔ circle-of-fifths integer
+_KEY_TO_FIFTHS: dict[str, int] = {
+    "C": 0, "G": 1, "D": 2, "A": 3, "E": 4, "B": 5, "F#": 6,
+    "Gb": -6, "F": -1, "Bb": -2, "Eb": -3, "Ab": -4, "Db": -5,
+}
+_FIFTHS_TO_KEY: dict[int, str] = {
+    0: "C", 1: "G", 2: "D", 3: "A", 4: "E", 5: "B", 6: "F#",
+    -1: "F", -2: "Bb", -3: "Eb", -4: "Ab", -5: "Db", -6: "Gb",
+}
+
+
+def key_to_fifths(key: str) -> int:
+    """Convert a key name (e.g. 'Bb', 'G') to MusicXML <fifths> integer."""
+    if key in _KEY_TO_FIFTHS:
+        return _KEY_TO_FIFTHS[key]
+    raise ValueError(f"No fifths mapping for key: {key!r}")
+
+
+def fifths_to_key(fifths: int) -> str | None:
+    """Convert a MusicXML <fifths> integer to a key name, or None."""
+    return _FIFTHS_TO_KEY.get(fifths)

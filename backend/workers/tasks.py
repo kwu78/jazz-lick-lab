@@ -1,11 +1,14 @@
 import logging
+import os
 import statistics
+import xml.etree.ElementTree as ET
 
 from sqlalchemy.orm.attributes import flag_modified
 
+from config import settings
 from database import SessionLocal
 from models import Job
-from services.klangio import transcribe
+from services.klangio import fetch_job_pdf, fetch_job_xml, transcribe
 
 logger = logging.getLogger(__name__)
 
@@ -85,13 +88,18 @@ def _auto_detect_settings(result: dict) -> dict:
         if "offset_sec" not in settings and "offset_sec" in bt_settings:
             settings["offset_sec"] = bt_settings["offset_sec"]
 
+    # Key signature from Klangio MusicXML (stored in artifacts during fetch)
+    klangio_key = (result.get("klangio_artifacts") or {}).get("key_signature")
+    if klangio_key:
+        settings["key_signature"] = klangio_key
+
     if settings:
         settings.setdefault("offset_sec", 0.0)
         settings.setdefault("time_signature", "4/4")
         logger.info(
-            "Auto-detected settings: bpm=%s time_sig=%s offset=%s",
+            "Auto-detected settings: bpm=%s time_sig=%s offset=%s key=%s",
             settings.get("bpm"), settings.get("time_signature"),
-            settings.get("offset_sec"),
+            settings.get("offset_sec"), settings.get("key_signature"),
         )
 
     return settings
@@ -111,6 +119,52 @@ def process_job(job_id: str) -> None:
         logger.info("Job %s: TRANSCRIBING", job_id)
 
         result = transcribe(job.audio_path, job.instrument)
+
+        # Fetch Klangio artifacts (best-effort)
+        klangio_tid = result.get("klangio_transcription_id")
+        if klangio_tid:
+            klangio_dir = os.path.join(settings.data_dir, "jobs", job_id, "klangio")
+            os.makedirs(klangio_dir, exist_ok=True)
+            artifacts: dict = {"klangio_job_id": klangio_tid}
+
+            try:
+                xml_bytes = fetch_job_xml(klangio_tid)
+                xml_path = os.path.join(klangio_dir, "transcription.musicxml")
+                with open(xml_path, "wb") as f:
+                    f.write(xml_bytes)
+                artifacts["xml_path"] = xml_path
+                artifacts["has_xml"] = True
+                logger.info("Job %s: saved Klangio XML (%d bytes)", job_id, len(xml_bytes))
+
+                # Extract key signature from Klangio MusicXML
+                try:
+                    tree = ET.fromstring(xml_bytes)
+                    fifths_el = tree.find(".//{http://www.musicxml.org/ns/musicxml}key/{http://www.musicxml.org/ns/musicxml}fifths")
+                    if fifths_el is None:
+                        fifths_el = tree.find(".//key/fifths")
+                    if fifths_el is not None:
+                        from services.theory import fifths_to_key
+                        detected_key = fifths_to_key(int(fifths_el.text))
+                        if detected_key:
+                            artifacts["key_signature"] = detected_key
+                            logger.info("Job %s: extracted key signature: %s", job_id, detected_key)
+                except Exception as parse_exc:
+                    logger.warning("Job %s: failed to parse key from XML: %s", job_id, parse_exc)
+            except Exception as exc:
+                logger.warning("Job %s: failed to fetch Klangio XML: %s", job_id, exc)
+
+            try:
+                pdf_bytes = fetch_job_pdf(klangio_tid)
+                pdf_path = os.path.join(klangio_dir, "transcription.pdf")
+                with open(pdf_path, "wb") as f:
+                    f.write(pdf_bytes)
+                artifacts["pdf_path"] = pdf_path
+                artifacts["has_pdf"] = True
+                logger.info("Job %s: saved Klangio PDF (%d bytes)", job_id, len(pdf_bytes))
+            except Exception as exc:
+                logger.warning("Job %s: failed to fetch Klangio PDF: %s", job_id, exc)
+
+            result["klangio_artifacts"] = artifacts
 
         job.result_json = result
         job.status = "READY"

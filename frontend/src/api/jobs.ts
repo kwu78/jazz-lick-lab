@@ -67,6 +67,7 @@ export interface JobSettings {
   bpm: number | null;
   offset_sec: number;
   time_signature: string | null;
+  key_signature: string | null;
 }
 
 /* ── API calls ─────────────────────────────────────── */

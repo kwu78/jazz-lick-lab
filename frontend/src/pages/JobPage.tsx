@@ -5,6 +5,8 @@ import Panel from "../components/Panel";
 import ErrorBox from "../components/ErrorBox";
 import Waveform, { type WaveformHandle } from "../components/Waveform";
 import ScoreViewer from "../components/ScoreViewer";
+import PdfViewer from "../components/PdfViewer";
+import PianoRoll, { type PianoRollNote } from "../components/PianoRoll";
 import SettingsPanel from "../components/SettingsPanel";
 import SelectionPanel from "../components/SelectionPanel";
 import AnalysisPanel from "../components/AnalysisPanel";
@@ -29,6 +31,7 @@ const DEFAULT_SETTINGS: JobSettings = {
   bpm: null,
   offset_sec: 0,
   time_signature: "4/4",
+  key_signature: null,
 };
 
 export default function JobPage() {
@@ -47,6 +50,19 @@ export default function JobPage() {
   const [settings, setSettings] = useState<JobSettings>(DEFAULT_SETTINGS);
   const [settingsVersion, setSettingsVersion] = useState(0);
 
+  // Score tab state
+  type ScoreTab = "pianoroll" | "notation" | "pdf";
+  const [scoreTab, setScoreTab] = useState<ScoreTab>("notation");
+
+  // Notes for piano roll
+  const [allNotes, setAllNotes] = useState<PianoRollNote[]>([]);
+
+  // Playhead time (updated while playing)
+  const [playheadTime, setPlayheadTime] = useState<number | undefined>(
+    undefined
+  );
+  const playheadRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   // Poll job status
   useEffect(() => {
     if (!jobId) return;
@@ -60,13 +76,17 @@ export default function JobPage() {
           setJob(j);
           // Initialize settings from job response
           if (j.status === "READY") {
-            const s = (j as Record<string, unknown>).settings as JobSettings | null;
+            const s = (j as unknown as Record<string, unknown>).settings as JobSettings | null;
             if (s) {
               setSettings({
                 bpm: s.bpm ?? null,
                 offset_sec: s.offset_sec ?? 0,
                 time_signature: s.time_signature ?? "4/4",
+                key_signature: s.key_signature ?? null,
               });
+              if (s.key_signature) {
+                setPreviewKey(s.key_signature);
+              }
             }
           }
           if (j.status === "READY" || j.status === "FAILED") break;
@@ -85,6 +105,21 @@ export default function JobPage() {
     };
   }, [jobId]);
 
+  // Fetch all notes once job is ready
+  useEffect(() => {
+    if (!jobId || job?.status !== "READY") return;
+    let active = true;
+    fetch(`${BASE_URL}/jobs/${jobId}/notes`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        if (active) setAllNotes(data.notes ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [jobId, job?.status]);
+
   const handleRegionChange = useCallback((start: number, end: number) => {
     setRegionStart(start);
     setRegionEnd(end);
@@ -93,8 +128,26 @@ export default function JobPage() {
   const handlePlaySelection = useCallback(() => {
     if (regionStart != null && regionEnd != null && waveformRef.current) {
       waveformRef.current.playRegion(regionStart, regionEnd);
+      // Start playhead polling
+      if (playheadRef.current) clearInterval(playheadRef.current);
+      playheadRef.current = setInterval(() => {
+        const t = waveformRef.current?.getCurrentTime() ?? 0;
+        setPlayheadTime(t);
+        if (t >= regionEnd || t < regionStart) {
+          setPlayheadTime(undefined);
+          if (playheadRef.current) clearInterval(playheadRef.current);
+          playheadRef.current = null;
+        }
+      }, 50);
     }
   }, [regionStart, regionEnd]);
+
+  // Cleanup playhead polling on unmount
+  useEffect(() => {
+    return () => {
+      if (playheadRef.current) clearInterval(playheadRef.current);
+    };
+  }, []);
 
   const handleSettingsSaved = useCallback((saved: JobSettings) => {
     setSettings(saved);
@@ -209,35 +262,83 @@ export default function JobPage() {
             onSaved={handleSettingsSaved}
           />
 
-          {/* Score Preview */}
-          <Panel title="Score Preview">
-            <div className="flex items-center gap-3 mb-4">
-              <label className="flex items-center gap-1.5 text-xs text-muted">
-                Key:
-                <select
-                  value={previewKey}
-                  onChange={(e) => setPreviewKey(e.target.value)}
-                  className="border border-border rounded px-2 py-1 text-xs bg-page text-ink"
+          {/* Score — tabbed view */}
+          <Panel title="Score">
+            {/* Tab bar */}
+            <div className="flex items-center gap-1 mb-4">
+              {(
+                [
+                  ["notation", "Notation"],
+                  ["pianoroll", "Piano Roll"],
+                  ["pdf", "PDF"],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setScoreTab(key)}
+                  className={`px-3 py-1 text-xs rounded border ${
+                    scoreTab === key
+                      ? "border-ink bg-ink text-page"
+                      : "border-border text-muted hover:border-ink"
+                  }`}
                 >
-                  {ALL_KEYS.map((k) => (
-                    <option key={k} value={k}>
-                      {k}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  {label}
+                </button>
+              ))}
+
+              {/* Key selector (notation tab only) */}
+              {scoreTab === "notation" && (
+                <label className="flex items-center gap-1.5 text-xs text-muted ml-3">
+                  Key:
+                  <select
+                    value={previewKey}
+                    onChange={(e) => setPreviewKey(e.target.value)}
+                    className="border border-border rounded px-2 py-1 text-xs bg-page text-ink"
+                  >
+                    {ALL_KEYS.map((k) => (
+                      <option key={k} value={k}>
+                        {k}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
               {hasRegion && (
-                <span className="text-xs text-muted">
+                <span className="text-xs text-muted ml-auto">
                   {regionStart!.toFixed(2)}s &ndash; {regionEnd!.toFixed(2)}s
                 </span>
               )}
             </div>
-            {scorePreviewUrl ? (
-              <ScoreViewer musicXmlUrl={scorePreviewUrl} />
-            ) : (
-              <p className="text-sm text-muted py-4 text-center">
-                Drag a region on the waveform to preview its score
-              </p>
+
+            {/* Piano Roll */}
+            {scoreTab === "pianoroll" &&
+              (hasRegion ? (
+                <PianoRoll
+                  notes={allNotes}
+                  startSec={regionStart!}
+                  endSec={regionEnd!}
+                  currentTimeSec={playheadTime}
+                />
+              ) : (
+                <p className="text-sm text-muted py-4 text-center">
+                  Drag a region on the waveform to view piano roll
+                </p>
+              ))}
+
+            {/* Notation */}
+            {scoreTab === "notation" &&
+              (scorePreviewUrl ? (
+                <ScoreViewer musicXmlUrl={scorePreviewUrl} />
+              ) : (
+                <p className="text-sm text-muted py-4 text-center">
+                  Drag a region on the waveform to preview notation
+                </p>
+              ))}
+
+            {/* PDF */}
+            {scoreTab === "pdf" && (
+              <PdfViewer pdfUrl={`${BASE_URL}/jobs/${jobId}/pdf`} />
             )}
           </Panel>
 

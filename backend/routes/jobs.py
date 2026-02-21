@@ -39,6 +39,8 @@ from services.musicxml import cleanup_notes_for_notation, generate_musicxml
 from services.practice_pack import build_practice_pack
 from services.storage import save_audio
 from services.theory import (
+    PITCH_CLASS,
+    SEMITONE_TO_NAME,
     parse_chord_root,
     parse_key,
     semitone_interval,
@@ -748,6 +750,66 @@ def get_practice_pack_musicxml(
     )
 
 
+@router.get("/jobs/{job_id}/score")
+def get_score(job_id: str, db: Session = Depends(get_db)):
+    """Return Klangio MusicXML if available, otherwise fall back to generated preview."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status != "READY" or not job.result_json:
+        raise HTTPException(status_code=409, detail="Job not ready")
+
+    artifacts = (job.result_json or {}).get("klangio_artifacts") or {}
+    xml_path = artifacts.get("xml_path")
+
+    if xml_path and os.path.isfile(xml_path):
+        return FileResponse(
+            path=xml_path,
+            media_type="application/vnd.recordare.musicxml+xml",
+            filename="score.musicxml",
+        )
+
+    # Fallback: generate from transcription data
+    transcription = TranscriptionResult(**{
+        k: v for k, v in job.result_json.items()
+        if k in TranscriptionResult.model_fields
+    })
+    job_settings = JobSettings(**(job.result_json.get("settings") or {}))
+    bpm = job_settings.bpm or 120.0
+    time_sig = job_settings.time_signature or "4/4"
+    notes = list(transcription.notes)
+    chords = list(transcription.chords)
+    notes = cleanup_notes_for_notation(notes)
+    xml = generate_musicxml(notes, chords, bpm=bpm, time_signature=time_sig, grid=16,
+                            key_sig=job_settings.key_signature)
+    return Response(
+        content=xml,
+        media_type="application/vnd.recordare.musicxml+xml",
+    )
+
+
+@router.get("/jobs/{job_id}/pdf")
+def get_pdf(job_id: str, db: Session = Depends(get_db)):
+    """Return Klangio PDF if available."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status != "READY" or not job.result_json:
+        raise HTTPException(status_code=409, detail="Job not ready")
+
+    artifacts = (job.result_json or {}).get("klangio_artifacts") or {}
+    pdf_path = artifacts.get("pdf_path")
+
+    if pdf_path and os.path.isfile(pdf_path):
+        return FileResponse(
+            path=pdf_path,
+            media_type="application/pdf",
+            filename="transcription.pdf",
+        )
+
+    raise HTTPException(status_code=404, detail="Klangio PDF not available for this job")
+
+
 @router.get("/jobs/{job_id}/score-preview")
 def score_preview(
     job_id: str,
@@ -806,15 +868,16 @@ def score_preview(
     notes = cleanup_notes_for_notation(notes)
 
     # Transpose if key is provided
+    effective_key_sig = job_settings.key_signature
     if key:
         try:
             parse_key(key)
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid key: {key!r}")
 
-        # Infer source key from first chord root
-        source_key = "C"
-        if chords:
+        # Use detected key signature as source; fall back to first chord root
+        source_key = job_settings.key_signature or "C"
+        if source_key == "C" and chords:
             root = parse_chord_root(chords[0].symbol)
             if root:
                 source_key = root
@@ -837,10 +900,16 @@ def score_preview(
                 )
                 for c in chords
             ]
+            # Transpose key signature to match
+            if effective_key_sig:
+                effective_key_sig = SEMITONE_TO_NAME[
+                    (PITCH_CLASS[effective_key_sig] + interval) % 12
+                ]
 
     bpm = job_settings.bpm or 120.0
     time_sig = job_settings.time_signature or "4/4"
-    xml = generate_musicxml(notes, chords, bpm=bpm, time_signature=time_sig, grid=grid)
+    xml = generate_musicxml(notes, chords, bpm=bpm, time_signature=time_sig, grid=grid,
+                            key_sig=effective_key_sig)
 
     return Response(
         content=xml,
