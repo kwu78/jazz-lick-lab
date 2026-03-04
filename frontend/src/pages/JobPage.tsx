@@ -16,6 +16,7 @@ import Button from "../components/Button";
 import {
   getJob,
   getAudioUrl,
+  getStemAudioUrl,
   type Job,
   type Selection,
   type JobSettings,
@@ -26,6 +27,8 @@ const ALL_KEYS = [
   "C", "Db", "D", "Eb", "E", "F",
   "F#", "G", "Ab", "A", "Bb", "B",
 ];
+
+const STEM_INSTRUMENTS = new Set(["bass", "piano", "guitar", "vocals", "drums"]);
 
 const DEFAULT_SETTINGS: JobSettings = {
   bpm: null,
@@ -49,6 +52,10 @@ export default function JobPage() {
   // Settings state
   const [settings, setSettings] = useState<JobSettings>(DEFAULT_SETTINGS);
   const [settingsVersion, setSettingsVersion] = useState(0);
+
+  // Audio source toggle (original vs stem)
+  const [useStem, setUseStem] = useState(false);
+  const hasStem = STEM_INSTRUMENTS.has(job?.instrument ?? "");
 
   // Score tab state
   type ScoreTab = "pianoroll" | "notation" | "pdf";
@@ -233,7 +240,7 @@ export default function JobPage() {
           <Panel title="Waveform">
             <Waveform
               ref={waveformRef}
-              audioUrl={getAudioUrl(jobId)}
+              audioUrl={useStem ? getStemAudioUrl(jobId) : getAudioUrl(jobId)}
               onRegionChange={handleRegionChange}
               bpm={settings.bpm ?? undefined}
               offsetSec={settings.offset_sec}
@@ -247,6 +254,18 @@ export default function JobPage() {
               >
                 Play Selection
               </Button>
+              {hasStem && (
+                <button
+                  onClick={() => setUseStem((v) => !v)}
+                  className={`px-3 py-1 text-xs rounded border ${
+                    useStem
+                      ? "border-ink bg-ink text-page"
+                      : "border-border text-muted hover:border-ink"
+                  }`}
+                >
+                  {useStem ? "Stem" : "Original"}
+                </button>
+              )}
               {!hasRegion && (
                 <span className="text-xs text-muted">
                   Drag a region on the waveform first

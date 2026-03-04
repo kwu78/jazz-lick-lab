@@ -87,6 +87,10 @@ export function getAudioUrl(jobId: string): string {
   return `${BASE_URL}/jobs/${jobId}/audio`;
 }
 
+export function getStemAudioUrl(jobId: string): string {
+  return `${BASE_URL}/jobs/${jobId}/stem-audio`;
+}
+
 export async function listSelections(
   jobId: string
 ): Promise<{ selections: Selection[] }> {

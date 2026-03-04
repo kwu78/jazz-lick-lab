@@ -942,3 +942,40 @@ def get_audio(job_id: str, db: Session = Depends(get_db)):
         media_type=media_type,
         filename=filename,
     )
+
+
+@router.get("/jobs/{job_id}/stem-audio")
+def get_stem_audio(job_id: str, db: Session = Depends(get_db)):
+    """Serve the isolated stem audio (from source separation) for A/B comparison."""
+    from pathlib import Path
+    from services.klangio import _instrument_to_stem
+
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    instrument = job.instrument or ""
+    stem_info = _instrument_to_stem(instrument)
+    if not stem_info:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Instrument '{instrument}' does not support source separation. "
+                   f"Supported: bass, piano, guitar, vocals, drums.",
+        )
+
+    stem_type, _ = stem_info
+    stem_path = str(Path(job.audio_path).parent / f"stem_{stem_type}.wav")
+
+    if not os.path.isfile(stem_path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Stem file not found at {stem_path}. "
+                   f"This job may have been created before source separation was enabled, "
+                   f"or separation failed. Try re-uploading the audio.",
+        )
+
+    return FileResponse(
+        path=stem_path,
+        media_type="audio/wav",
+        filename=f"jazz_lick_lab_{job_id}_stem_{stem_type}.wav",
+    )
