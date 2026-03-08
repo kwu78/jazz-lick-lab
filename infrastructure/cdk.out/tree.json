@@ -1,0 +1,3408 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "JazzLickLabStack": {
+        "id": "JazzLickLabStack",
+        "path": "JazzLickLabStack",
+        "children": {
+          "Vpc": {
+            "id": "Vpc",
+            "path": "JazzLickLabStack/Vpc",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/Vpc/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::VPC",
+                  "aws:cdk:cloudformation:props": {
+                    "cidrBlock": "10.0.0.0/16",
+                    "enableDnsHostnames": true,
+                    "enableDnsSupport": true,
+                    "instanceTenancy": "default",
+                    "tags": [
+                      {
+                        "key": "Name",
+                        "value": "JazzLickLabStack/Vpc"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnVPC",
+                  "version": "2.178.2"
+                }
+              },
+              "PublicSubnet1": {
+                "id": "PublicSubnet1",
+                "path": "JazzLickLabStack/Vpc/PublicSubnet1",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1a",
+                        "cidrBlock": "10.0.0.0/24",
+                        "mapPublicIpOnLaunch": true,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PublicSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PublicSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "VpcPublicSubnet1RouteTable6C95E38E"
+                        },
+                        "subnetId": {
+                          "Ref": "VpcPublicSubnet1Subnet5C2D37C4"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "gatewayId": {
+                          "Ref": "VpcIGWD7BA715C"
+                        },
+                        "routeTableId": {
+                          "Ref": "VpcPublicSubnet1RouteTable6C95E38E"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "EIP": {
+                    "id": "EIP",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/EIP",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::EIP",
+                      "aws:cdk:cloudformation:props": {
+                        "domain": "vpc",
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PublicSubnet1"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnEIP",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "NATGateway": {
+                    "id": "NATGateway",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet1/NATGateway",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::NatGateway",
+                      "aws:cdk:cloudformation:props": {
+                        "allocationId": {
+                          "Fn::GetAtt": [
+                            "VpcPublicSubnet1EIPD7E02669",
+                            "AllocationId"
+                          ]
+                        },
+                        "subnetId": {
+                          "Ref": "VpcPublicSubnet1Subnet5C2D37C4"
+                        },
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PublicSubnet1"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnNatGateway",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PublicSubnet",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "PublicSubnet2": {
+                "id": "PublicSubnet2",
+                "path": "JazzLickLabStack/Vpc/PublicSubnet2",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet2/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1b",
+                        "cidrBlock": "10.0.1.0/24",
+                        "mapPublicIpOnLaunch": true,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Public"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PublicSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet2/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet2/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PublicSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet2/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "VpcPublicSubnet2RouteTable94F7E489"
+                        },
+                        "subnetId": {
+                          "Ref": "VpcPublicSubnet2Subnet691E08A3"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "JazzLickLabStack/Vpc/PublicSubnet2/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "gatewayId": {
+                          "Ref": "VpcIGWD7BA715C"
+                        },
+                        "routeTableId": {
+                          "Ref": "VpcPublicSubnet2RouteTable94F7E489"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PublicSubnet",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "PrivateSubnet1": {
+                "id": "PrivateSubnet1",
+                "path": "JazzLickLabStack/Vpc/PrivateSubnet1",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet1/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1a",
+                        "cidrBlock": "10.0.2.0/24",
+                        "mapPublicIpOnLaunch": false,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PrivateSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet1/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet1/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PrivateSubnet1"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet1/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "VpcPrivateSubnet1RouteTableB2C5B500"
+                        },
+                        "subnetId": {
+                          "Ref": "VpcPrivateSubnet1Subnet536B997A"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet1/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "natGatewayId": {
+                          "Ref": "VpcPublicSubnet1NATGateway4D7517AA"
+                        },
+                        "routeTableId": {
+                          "Ref": "VpcPrivateSubnet1RouteTableB2C5B500"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PrivateSubnet",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "PrivateSubnet2": {
+                "id": "PrivateSubnet2",
+                "path": "JazzLickLabStack/Vpc/PrivateSubnet2",
+                "children": {
+                  "Subnet": {
+                    "id": "Subnet",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet2/Subnet",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
+                      "aws:cdk:cloudformation:props": {
+                        "availabilityZone": "us-east-1b",
+                        "cidrBlock": "10.0.3.0/24",
+                        "mapPublicIpOnLaunch": false,
+                        "tags": [
+                          {
+                            "key": "aws-cdk:subnet-name",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "aws-cdk:subnet-type",
+                            "value": "Private"
+                          },
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PrivateSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "Acl": {
+                    "id": "Acl",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet2/Acl",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "RouteTable": {
+                    "id": "RouteTable",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet2/RouteTable",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
+                      "aws:cdk:cloudformation:props": {
+                        "tags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/Vpc/PrivateSubnet2"
+                          }
+                        ],
+                        "vpcId": {
+                          "Ref": "Vpc8378EB38"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "RouteTableAssociation": {
+                    "id": "RouteTableAssociation",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet2/RouteTableAssociation",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
+                      "aws:cdk:cloudformation:props": {
+                        "routeTableId": {
+                          "Ref": "VpcPrivateSubnet2RouteTableA678073B"
+                        },
+                        "subnetId": {
+                          "Ref": "VpcPrivateSubnet2Subnet3788AAA1"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultRoute": {
+                    "id": "DefaultRoute",
+                    "path": "JazzLickLabStack/Vpc/PrivateSubnet2/DefaultRoute",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EC2::Route",
+                      "aws:cdk:cloudformation:props": {
+                        "destinationCidrBlock": "0.0.0.0/0",
+                        "natGatewayId": {
+                          "Ref": "VpcPublicSubnet1NATGateway4D7517AA"
+                        },
+                        "routeTableId": {
+                          "Ref": "VpcPrivateSubnet2RouteTableA678073B"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_ec2.CfnRoute",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.PrivateSubnet",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "IGW": {
+                "id": "IGW",
+                "path": "JazzLickLabStack/Vpc/IGW",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::InternetGateway",
+                  "aws:cdk:cloudformation:props": {
+                    "tags": [
+                      {
+                        "key": "Name",
+                        "value": "JazzLickLabStack/Vpc"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnInternetGateway",
+                  "version": "2.178.2"
+                }
+              },
+              "VPCGW": {
+                "id": "VPCGW",
+                "path": "JazzLickLabStack/Vpc/VPCGW",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::VPCGatewayAttachment",
+                  "aws:cdk:cloudformation:props": {
+                    "internetGatewayId": {
+                      "Ref": "VpcIGWD7BA715C"
+                    },
+                    "vpcId": {
+                      "Ref": "Vpc8378EB38"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnVPCGatewayAttachment",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.Vpc",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "AlbSg": {
+            "id": "AlbSg",
+            "path": "JazzLickLabStack/AlbSg",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/AlbSg/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "ALB",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "securityGroupIngress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "ipProtocol": "tcp",
+                        "fromPort": 80,
+                        "toPort": 80,
+                        "description": "HTTP"
+                      }
+                    ],
+                    "vpcId": {
+                      "Ref": "Vpc8378EB38"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "EcsSg": {
+            "id": "EcsSg",
+            "path": "JazzLickLabStack/EcsSg",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/EcsSg/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "ECS tasks",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "vpcId": {
+                      "Ref": "Vpc8378EB38"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                  "version": "2.178.2"
+                }
+              },
+              "from JazzLickLabStackAlbSgC54EDA86:8000": {
+                "id": "from JazzLickLabStackAlbSgC54EDA86:8000",
+                "path": "JazzLickLabStack/EcsSg/from JazzLickLabStackAlbSgC54EDA86:8000",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "ALB_to_API_8000",
+                    "fromPort": 8000,
+                    "groupId": {
+                      "Fn::GetAtt": [
+                        "EcsSg17B4B0B3",
+                        "GroupId"
+                      ]
+                    },
+                    "ipProtocol": "tcp",
+                    "sourceSecurityGroupId": {
+                      "Fn::GetAtt": [
+                        "AlbSg1155C1BE",
+                        "GroupId"
+                      ]
+                    },
+                    "toPort": 8000
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "DbSg": {
+            "id": "DbSg",
+            "path": "JazzLickLabStack/DbSg",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/DbSg/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "RDS Postgres",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "vpcId": {
+                      "Ref": "Vpc8378EB38"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                  "version": "2.178.2"
+                }
+              },
+              "from JazzLickLabStackEcsSg8826DDE3:5432": {
+                "id": "from JazzLickLabStackEcsSg8826DDE3:5432",
+                "path": "JazzLickLabStack/DbSg/from JazzLickLabStackEcsSg8826DDE3:5432",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "ECS_to_Postgres_5432",
+                    "fromPort": 5432,
+                    "groupId": {
+                      "Fn::GetAtt": [
+                        "DbSg495F8305",
+                        "GroupId"
+                      ]
+                    },
+                    "ipProtocol": "tcp",
+                    "sourceSecurityGroupId": {
+                      "Fn::GetAtt": [
+                        "EcsSg17B4B0B3",
+                        "GroupId"
+                      ]
+                    },
+                    "toPort": 5432
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "RedisSg": {
+            "id": "RedisSg",
+            "path": "JazzLickLabStack/RedisSg",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/RedisSg/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "ElastiCache Redis",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "vpcId": {
+                      "Ref": "Vpc8378EB38"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                  "version": "2.178.2"
+                }
+              },
+              "from JazzLickLabStackEcsSg8826DDE3:6379": {
+                "id": "from JazzLickLabStackEcsSg8826DDE3:6379",
+                "path": "JazzLickLabStack/RedisSg/from JazzLickLabStackEcsSg8826DDE3:6379",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "ECS_to_Redis_6379",
+                    "fromPort": 6379,
+                    "groupId": {
+                      "Fn::GetAtt": [
+                        "RedisSgFB48DCCD",
+                        "GroupId"
+                      ]
+                    },
+                    "ipProtocol": "tcp",
+                    "sourceSecurityGroupId": {
+                      "Fn::GetAtt": [
+                        "EcsSg17B4B0B3",
+                        "GroupId"
+                      ]
+                    },
+                    "toPort": 6379
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "EfsSg": {
+            "id": "EfsSg",
+            "path": "JazzLickLabStack/EfsSg",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/EfsSg/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroup",
+                  "aws:cdk:cloudformation:props": {
+                    "groupDescription": "EFS",
+                    "securityGroupEgress": [
+                      {
+                        "cidrIp": "0.0.0.0/0",
+                        "description": "Allow all outbound traffic by default",
+                        "ipProtocol": "-1"
+                      }
+                    ],
+                    "vpcId": {
+                      "Ref": "Vpc8378EB38"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroup",
+                  "version": "2.178.2"
+                }
+              },
+              "from JazzLickLabStackEcsSg8826DDE3:2049": {
+                "id": "from JazzLickLabStackEcsSg8826DDE3:2049",
+                "path": "JazzLickLabStack/EfsSg/from JazzLickLabStackEcsSg8826DDE3:2049",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EC2::SecurityGroupIngress",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "ECS_to_EFS_2049",
+                    "fromPort": 2049,
+                    "groupId": {
+                      "Fn::GetAtt": [
+                        "EfsSgCAB16DA1",
+                        "GroupId"
+                      ]
+                    },
+                    "ipProtocol": "tcp",
+                    "sourceSecurityGroupId": {
+                      "Fn::GetAtt": [
+                        "EcsSg17B4B0B3",
+                        "GroupId"
+                      ]
+                    },
+                    "toPort": 2049
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ec2.CfnSecurityGroupIngress",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ec2.SecurityGroup",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "Postgres": {
+            "id": "Postgres",
+            "path": "JazzLickLabStack/Postgres",
+            "children": {
+              "SubnetGroup": {
+                "id": "SubnetGroup",
+                "path": "JazzLickLabStack/Postgres/SubnetGroup",
+                "children": {
+                  "Default": {
+                    "id": "Default",
+                    "path": "JazzLickLabStack/Postgres/SubnetGroup/Default",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::RDS::DBSubnetGroup",
+                      "aws:cdk:cloudformation:props": {
+                        "dbSubnetGroupDescription": "Subnet group for Postgres database",
+                        "subnetIds": [
+                          {
+                            "Ref": "VpcPrivateSubnet1Subnet536B997A"
+                          },
+                          {
+                            "Ref": "VpcPrivateSubnet2Subnet3788AAA1"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_rds.CfnDBSubnetGroup",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_rds.SubnetGroup",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "Secret": {
+                "id": "Secret",
+                "path": "JazzLickLabStack/Postgres/Secret",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/Postgres/Secret/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::SecretsManager::Secret",
+                      "aws:cdk:cloudformation:props": {
+                        "description": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "Generated by the CDK for stack: ",
+                              {
+                                "Ref": "AWS::StackName"
+                              }
+                            ]
+                          ]
+                        },
+                        "generateSecretString": {
+                          "passwordLength": 30,
+                          "secretStringTemplate": "{\"username\":\"postgres\"}",
+                          "generateStringKey": "password",
+                          "excludeCharacters": " %+~`#$&*()|[]{}:;<>?!'/@\"\\"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_secretsmanager.CfnSecret",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "Attachment": {
+                    "id": "Attachment",
+                    "path": "JazzLickLabStack/Postgres/Secret/Attachment",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/Postgres/Secret/Attachment/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::SecretsManager::SecretTargetAttachment",
+                          "aws:cdk:cloudformation:props": {
+                            "secretId": {
+                              "Ref": "JazzLickLabStackPostgresSecretE151D77F3fdaad7efa858a3daf9490cf0a702aeb"
+                            },
+                            "targetId": {
+                              "Ref": "Postgres9DC8BB04"
+                            },
+                            "targetType": "AWS::RDS::DBInstance"
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_secretsmanager.CfnSecretTargetAttachment",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_secretsmanager.SecretTargetAttachment",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_rds.DatabaseSecret",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/Postgres/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::RDS::DBInstance",
+                  "aws:cdk:cloudformation:props": {
+                    "allocatedStorage": "100",
+                    "backupRetentionPeriod": 1,
+                    "copyTagsToSnapshot": true,
+                    "dbInstanceClass": "db.t3.micro",
+                    "dbName": "jazzlicklab",
+                    "dbSubnetGroupName": {
+                      "Ref": "PostgresSubnetGroup9F8A4D6E"
+                    },
+                    "deletionProtection": false,
+                    "engine": "postgres",
+                    "engineVersion": "16",
+                    "masterUsername": "postgres",
+                    "masterUserPassword": {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "{{resolve:secretsmanager:",
+                          {
+                            "Ref": "JazzLickLabStackPostgresSecretE151D77F3fdaad7efa858a3daf9490cf0a702aeb"
+                          },
+                          ":SecretString:password::}}"
+                        ]
+                      ]
+                    },
+                    "publiclyAccessible": false,
+                    "storageType": "gp2",
+                    "vpcSecurityGroups": [
+                      {
+                        "Fn::GetAtt": [
+                          "DbSg495F8305",
+                          "GroupId"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_rds.CfnDBInstance",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_rds.DatabaseInstance",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "RedisSubnets": {
+            "id": "RedisSubnets",
+            "path": "JazzLickLabStack/RedisSubnets",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::ElastiCache::SubnetGroup",
+              "aws:cdk:cloudformation:props": {
+                "description": "Redis subnet group",
+                "subnetIds": [
+                  {
+                    "Ref": "VpcPrivateSubnet1Subnet536B997A"
+                  },
+                  {
+                    "Ref": "VpcPrivateSubnet2Subnet3788AAA1"
+                  }
+                ]
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_elasticache.CfnSubnetGroup",
+              "version": "2.178.2"
+            }
+          },
+          "Redis": {
+            "id": "Redis",
+            "path": "JazzLickLabStack/Redis",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::ElastiCache::CacheCluster",
+              "aws:cdk:cloudformation:props": {
+                "cacheNodeType": "cache.t3.micro",
+                "cacheSubnetGroupName": {
+                  "Ref": "RedisSubnets"
+                },
+                "engine": "redis",
+                "numCacheNodes": 1,
+                "vpcSecurityGroupIds": [
+                  {
+                    "Fn::GetAtt": [
+                      "RedisSgFB48DCCD",
+                      "GroupId"
+                    ]
+                  }
+                ]
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_elasticache.CfnCacheCluster",
+              "version": "2.178.2"
+            }
+          },
+          "DataFs": {
+            "id": "DataFs",
+            "path": "JazzLickLabStack/DataFs",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/DataFs/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EFS::FileSystem",
+                  "aws:cdk:cloudformation:props": {
+                    "encrypted": true,
+                    "performanceMode": "generalPurpose",
+                    "fileSystemTags": [
+                      {
+                        "key": "Name",
+                        "value": "JazzLickLabStack/DataFs"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_efs.CfnFileSystem",
+                  "version": "2.178.2"
+                }
+              },
+              "EfsMountTarget1": {
+                "id": "EfsMountTarget1",
+                "path": "JazzLickLabStack/DataFs/EfsMountTarget1",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EFS::MountTarget",
+                  "aws:cdk:cloudformation:props": {
+                    "fileSystemId": {
+                      "Ref": "DataFsBDCE8805"
+                    },
+                    "securityGroups": [
+                      {
+                        "Fn::GetAtt": [
+                          "EfsSgCAB16DA1",
+                          "GroupId"
+                        ]
+                      }
+                    ],
+                    "subnetId": {
+                      "Ref": "VpcPrivateSubnet1Subnet536B997A"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_efs.CfnMountTarget",
+                  "version": "2.178.2"
+                }
+              },
+              "EfsMountTarget2": {
+                "id": "EfsMountTarget2",
+                "path": "JazzLickLabStack/DataFs/EfsMountTarget2",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::EFS::MountTarget",
+                  "aws:cdk:cloudformation:props": {
+                    "fileSystemId": {
+                      "Ref": "DataFsBDCE8805"
+                    },
+                    "securityGroups": [
+                      {
+                        "Fn::GetAtt": [
+                          "EfsSgCAB16DA1",
+                          "GroupId"
+                        ]
+                      }
+                    ],
+                    "subnetId": {
+                      "Ref": "VpcPrivateSubnet2Subnet3788AAA1"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_efs.CfnMountTarget",
+                  "version": "2.178.2"
+                }
+              },
+              "DataAp": {
+                "id": "DataAp",
+                "path": "JazzLickLabStack/DataFs/DataAp",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/DataFs/DataAp/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::EFS::AccessPoint",
+                      "aws:cdk:cloudformation:props": {
+                        "fileSystemId": {
+                          "Ref": "DataFsBDCE8805"
+                        },
+                        "posixUser": {
+                          "uid": "1000",
+                          "gid": "1000"
+                        },
+                        "rootDirectory": {
+                          "creationInfo": {
+                            "ownerGid": "1000",
+                            "ownerUid": "1000",
+                            "permissions": "755"
+                          },
+                          "path": "/data"
+                        },
+                        "accessPointTags": [
+                          {
+                            "key": "Name",
+                            "value": "JazzLickLabStack/DataFs/DataAp"
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_efs.CfnAccessPoint",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_efs.AccessPoint",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_efs.FileSystem",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "ApiSecrets": {
+            "id": "ApiSecrets",
+            "path": "JazzLickLabStack/ApiSecrets",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/ApiSecrets/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::SecretsManager::Secret",
+                  "aws:cdk:cloudformation:props": {
+                    "description": "Klangio and Anthropic API keys",
+                    "generateSecretString": {
+                      "secretStringTemplate": "{\"KLANGIO_API_KEY\":\"CHANGE_ME\",\"ANTHROPIC_API_KEY\":\"CHANGE_ME\"}",
+                      "generateStringKey": "_placeholder"
+                    },
+                    "name": "jazz-lick-lab/api-keys"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_secretsmanager.CfnSecret",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_secretsmanager.Secret",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "ArtifactsBucket": {
+            "id": "ArtifactsBucket",
+            "path": "JazzLickLabStack/ArtifactsBucket",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/ArtifactsBucket/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    },
+                    "tags": [
+                      {
+                        "key": "aws-cdk:auto-delete-objects",
+                        "value": "true"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.178.2"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "JazzLickLabStack/ArtifactsBucket/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/ArtifactsBucket/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "ArtifactsBucket2AAC5544"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "s3:PutBucketPolicy",
+                                "s3:GetBucket*",
+                                "s3:List*",
+                                "s3:DeleteObject*"
+                              ],
+                              "Effect": "Allow",
+                              "Principal": {
+                                "AWS": {
+                                  "Fn::GetAtt": [
+                                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                                    "Arn"
+                                  ]
+                                }
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "ArtifactsBucket2AAC5544",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "ArtifactsBucket2AAC5544",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "AutoDeleteObjectsCustomResource": {
+                "id": "AutoDeleteObjectsCustomResource",
+                "path": "JazzLickLabStack/ArtifactsBucket/AutoDeleteObjectsCustomResource",
+                "children": {
+                  "Default": {
+                    "id": "Default",
+                    "path": "JazzLickLabStack/ArtifactsBucket/AutoDeleteObjectsCustomResource/Default",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.CfnResource",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CustomResource",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "Custom::S3AutoDeleteObjectsCustomResourceProvider": {
+            "id": "Custom::S3AutoDeleteObjectsCustomResourceProvider",
+            "path": "JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider",
+            "children": {
+              "Staging": {
+                "id": "Staging",
+                "path": "JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Staging",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.AssetStaging",
+                  "version": "2.178.2"
+                }
+              },
+              "Role": {
+                "id": "Role",
+                "path": "JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.178.2"
+                }
+              },
+              "Handler": {
+                "id": "Handler",
+                "path": "JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CustomResourceProviderBase",
+              "version": "2.178.2"
+            }
+          },
+          "FrontendBucket": {
+            "id": "FrontendBucket",
+            "path": "JazzLickLabStack/FrontendBucket",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/FrontendBucket/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    },
+                    "tags": [
+                      {
+                        "key": "aws-cdk:auto-delete-objects",
+                        "value": "true"
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.178.2"
+                }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "JazzLickLabStack/FrontendBucket/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/FrontendBucket/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "FrontendBucketEFE2E19C"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "s3:PutBucketPolicy",
+                                "s3:GetBucket*",
+                                "s3:List*",
+                                "s3:DeleteObject*"
+                              ],
+                              "Effect": "Allow",
+                              "Principal": {
+                                "AWS": {
+                                  "Fn::GetAtt": [
+                                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                                    "Arn"
+                                  ]
+                                }
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "FrontendBucketEFE2E19C",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "FrontendBucketEFE2E19C",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "Action": "s3:GetObject",
+                              "Condition": {
+                                "StringEquals": {
+                                  "AWS:SourceArn": {
+                                    "Fn::Join": [
+                                      "",
+                                      [
+                                        "arn:",
+                                        {
+                                          "Ref": "AWS::Partition"
+                                        },
+                                        ":cloudfront::",
+                                        {
+                                          "Ref": "AWS::AccountId"
+                                        },
+                                        ":distribution/",
+                                        {
+                                          "Ref": "FrontendCdn4FEA09D9"
+                                        }
+                                      ]
+                                    ]
+                                  }
+                                }
+                              },
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "cloudfront.amazonaws.com"
+                              },
+                              "Resource": {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "FrontendBucketEFE2E19C",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "AutoDeleteObjectsCustomResource": {
+                "id": "AutoDeleteObjectsCustomResource",
+                "path": "JazzLickLabStack/FrontendBucket/AutoDeleteObjectsCustomResource",
+                "children": {
+                  "Default": {
+                    "id": "Default",
+                    "path": "JazzLickLabStack/FrontendBucket/AutoDeleteObjectsCustomResource/Default",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.CfnResource",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CustomResource",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "Alb": {
+            "id": "Alb",
+            "path": "JazzLickLabStack/Alb",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/Alb/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+                  "aws:cdk:cloudformation:props": {
+                    "loadBalancerAttributes": [
+                      {
+                        "key": "deletion_protection.enabled",
+                        "value": "false"
+                      }
+                    ],
+                    "scheme": "internet-facing",
+                    "securityGroups": [
+                      {
+                        "Fn::GetAtt": [
+                          "AlbSg1155C1BE",
+                          "GroupId"
+                        ]
+                      }
+                    ],
+                    "subnets": [
+                      {
+                        "Ref": "VpcPublicSubnet1Subnet5C2D37C4"
+                      },
+                      {
+                        "Ref": "VpcPublicSubnet2Subnet691E08A3"
+                      }
+                    ],
+                    "type": "application"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnLoadBalancer",
+                  "version": "2.178.2"
+                }
+              },
+              "HttpListener": {
+                "id": "HttpListener",
+                "path": "JazzLickLabStack/Alb/HttpListener",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/Alb/HttpListener/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::Listener",
+                      "aws:cdk:cloudformation:props": {
+                        "defaultActions": [
+                          {
+                            "type": "forward",
+                            "targetGroupArn": {
+                              "Ref": "AlbHttpListenerApiTargetGroup47BD0ADD"
+                            }
+                          }
+                        ],
+                        "loadBalancerArn": {
+                          "Ref": "Alb16C2F182"
+                        },
+                        "port": 80,
+                        "protocol": "HTTP"
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnListener",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "ApiTargetGroup": {
+                    "id": "ApiTargetGroup",
+                    "path": "JazzLickLabStack/Alb/HttpListener/ApiTargetGroup",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/Alb/HttpListener/ApiTargetGroup/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+                          "aws:cdk:cloudformation:props": {
+                            "healthCheckIntervalSeconds": 30,
+                            "healthCheckPath": "/health",
+                            "healthCheckTimeoutSeconds": 5,
+                            "healthyThresholdCount": 2,
+                            "port": 8000,
+                            "protocol": "HTTP",
+                            "targetGroupAttributes": [
+                              {
+                                "key": "stickiness.enabled",
+                                "value": "false"
+                              }
+                            ],
+                            "targetType": "ip",
+                            "unhealthyThresholdCount": 3,
+                            "vpcId": {
+                              "Ref": "Vpc8378EB38"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.CfnTargetGroup",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationTargetGroup",
+                      "version": "2.178.2"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationListener",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_elasticloadbalancingv2.ApplicationLoadBalancer",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "FrontendCdn": {
+            "id": "FrontendCdn",
+            "path": "JazzLickLabStack/FrontendCdn",
+            "children": {
+              "Origin1": {
+                "id": "Origin1",
+                "path": "JazzLickLabStack/FrontendCdn/Origin1",
+                "children": {
+                  "S3OriginAccessControl": {
+                    "id": "S3OriginAccessControl",
+                    "path": "JazzLickLabStack/FrontendCdn/Origin1/S3OriginAccessControl",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/FrontendCdn/Origin1/S3OriginAccessControl/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::CloudFront::OriginAccessControl",
+                          "aws:cdk:cloudformation:props": {
+                            "originAccessControlConfig": {
+                              "name": "JazzLickLabStackFrontendCdnOrigin1S3OriginAccessControl4C092665",
+                              "signingBehavior": "always",
+                              "signingProtocol": "sigv4",
+                              "originAccessControlOriginType": "s3"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_cloudfront.CfnOriginAccessControl",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_cloudfront.S3OriginAccessControl",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.5.1"
+                }
+              },
+              "Origin2": {
+                "id": "Origin2",
+                "path": "JazzLickLabStack/FrontendCdn/Origin2",
+                "constructInfo": {
+                  "fqn": "constructs.Construct",
+                  "version": "10.5.1"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/FrontendCdn/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::CloudFront::Distribution",
+                  "aws:cdk:cloudformation:props": {
+                    "distributionConfig": {
+                      "enabled": true,
+                      "origins": [
+                        {
+                          "domainName": {
+                            "Fn::GetAtt": [
+                              "FrontendBucketEFE2E19C",
+                              "RegionalDomainName"
+                            ]
+                          },
+                          "id": "JazzLickLabStackFrontendCdnOrigin187DD6740",
+                          "s3OriginConfig": {
+                            "originAccessIdentity": ""
+                          },
+                          "originAccessControlId": {
+                            "Fn::GetAtt": [
+                              "FrontendCdnOrigin1S3OriginAccessControl597F6BF9",
+                              "Id"
+                            ]
+                          }
+                        },
+                        {
+                          "domainName": {
+                            "Fn::GetAtt": [
+                              "Alb16C2F182",
+                              "DNSName"
+                            ]
+                          },
+                          "id": "JazzLickLabStackFrontendCdnOrigin29FAF72CD",
+                          "customOriginConfig": {
+                            "originSslProtocols": [
+                              "TLSv1.2"
+                            ],
+                            "originProtocolPolicy": "http-only"
+                          }
+                        }
+                      ],
+                      "defaultCacheBehavior": {
+                        "pathPattern": "*",
+                        "targetOriginId": "JazzLickLabStackFrontendCdnOrigin187DD6740",
+                        "cachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+                        "compress": true,
+                        "viewerProtocolPolicy": "redirect-to-https"
+                      },
+                      "cacheBehaviors": [
+                        {
+                          "pathPattern": "/jobs",
+                          "targetOriginId": "JazzLickLabStackFrontendCdnOrigin29FAF72CD",
+                          "allowedMethods": [
+                            "GET",
+                            "HEAD",
+                            "OPTIONS",
+                            "PUT",
+                            "PATCH",
+                            "POST",
+                            "DELETE"
+                          ],
+                          "cachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+                          "compress": true,
+                          "originRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+                          "viewerProtocolPolicy": "redirect-to-https"
+                        },
+                        {
+                          "pathPattern": "/jobs/*",
+                          "targetOriginId": "JazzLickLabStackFrontendCdnOrigin29FAF72CD",
+                          "allowedMethods": [
+                            "GET",
+                            "HEAD",
+                            "OPTIONS",
+                            "PUT",
+                            "PATCH",
+                            "POST",
+                            "DELETE"
+                          ],
+                          "cachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+                          "compress": true,
+                          "originRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+                          "viewerProtocolPolicy": "redirect-to-https"
+                        },
+                        {
+                          "pathPattern": "/health",
+                          "targetOriginId": "JazzLickLabStackFrontendCdnOrigin29FAF72CD",
+                          "cachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+                          "compress": true,
+                          "originRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
+                          "viewerProtocolPolicy": "redirect-to-https"
+                        }
+                      ],
+                      "customErrorResponses": [
+                        {
+                          "errorCachingMinTtl": 0,
+                          "errorCode": 403,
+                          "responseCode": 200,
+                          "responsePagePath": "/index.html"
+                        },
+                        {
+                          "errorCachingMinTtl": 0,
+                          "errorCode": 404,
+                          "responseCode": 200,
+                          "responsePagePath": "/index.html"
+                        }
+                      ],
+                      "defaultRootObject": "index.html",
+                      "httpVersion": "http2",
+                      "ipv6Enabled": true
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_cloudfront.CfnDistribution",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_cloudfront.Distribution",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "ApiRepo": {
+            "id": "ApiRepo",
+            "path": "JazzLickLabStack/ApiRepo",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/ApiRepo/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECR::Repository",
+                  "aws:cdk:cloudformation:props": {
+                    "emptyOnDelete": true,
+                    "repositoryName": "jazz-lick-lab/api"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecr.CfnRepository",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecr.Repository",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "WorkerRepo": {
+            "id": "WorkerRepo",
+            "path": "JazzLickLabStack/WorkerRepo",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/WorkerRepo/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECR::Repository",
+                  "aws:cdk:cloudformation:props": {
+                    "emptyOnDelete": true,
+                    "repositoryName": "jazz-lick-lab/worker"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecr.CfnRepository",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecr.Repository",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "Cluster": {
+            "id": "Cluster",
+            "path": "JazzLickLabStack/Cluster",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/Cluster/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::Cluster",
+                  "aws:cdk:cloudformation:props": {}
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnCluster",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.Cluster",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "ApiTaskDef": {
+            "id": "ApiTaskDef",
+            "path": "JazzLickLabStack/ApiTaskDef",
+            "children": {
+              "TaskRole": {
+                "id": "TaskRole",
+                "path": "JazzLickLabStack/ApiTaskDef/TaskRole",
+                "children": {
+                  "ImportTaskRole": {
+                    "id": "ImportTaskRole",
+                    "path": "JazzLickLabStack/ApiTaskDef/TaskRole/ImportTaskRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/ApiTaskDef/TaskRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "JazzLickLabStack/ApiTaskDef/TaskRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/ApiTaskDef/TaskRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "elasticfilesystem:ClientMount",
+                                    "elasticfilesystem:ClientWrite",
+                                    "elasticfilesystem:ClientRootAccess"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "DataFsBDCE8805",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": [
+                                    "s3:GetObject*",
+                                    "s3:GetBucket*",
+                                    "s3:List*",
+                                    "s3:DeleteObject*",
+                                    "s3:PutObject",
+                                    "s3:PutObjectLegalHold",
+                                    "s3:PutObjectRetention",
+                                    "s3:PutObjectTagging",
+                                    "s3:PutObjectVersionTagging",
+                                    "s3:Abort*"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "ArtifactsBucket2AAC5544",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "ArtifactsBucket2AAC5544",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "ApiTaskDefTaskRoleDefaultPolicy66F6BAC0",
+                            "roles": [
+                              {
+                                "Ref": "ApiTaskDefTaskRole76FB19FA"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/ApiTaskDef/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::TaskDefinition",
+                  "aws:cdk:cloudformation:props": {
+                    "containerDefinitions": [
+                      {
+                        "command": [
+                          "sh",
+                          "-c",
+                          "export DATABASE_URL=\"postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/jazzlicklab\" && uvicorn app:app --host 0.0.0.0 --port 8000"
+                        ],
+                        "essential": true,
+                        "image": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::Select": [
+                                  4,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "ApiRepoEFA7BA97",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".dkr.ecr.",
+                              {
+                                "Fn::Select": [
+                                  3,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "ApiRepoEFA7BA97",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".",
+                              {
+                                "Ref": "AWS::URLSuffix"
+                              },
+                              "/",
+                              {
+                                "Ref": "ApiRepoEFA7BA97"
+                              },
+                              ":latest"
+                            ]
+                          ]
+                        },
+                        "mountPoints": [
+                          {
+                            "containerPath": "/app/data",
+                            "readOnly": false,
+                            "sourceVolume": "data-volume"
+                          }
+                        ],
+                        "name": "api",
+                        "portMappings": [
+                          {
+                            "containerPort": 8000,
+                            "protocol": "tcp"
+                          }
+                        ],
+                        "logConfiguration": {
+                          "logDriver": "awslogs",
+                          "options": {
+                            "awslogs-group": {
+                              "Ref": "ApiTaskDefapiLogGroup9FDF1262"
+                            },
+                            "awslogs-stream-prefix": "api",
+                            "awslogs-region": "us-east-1"
+                          }
+                        },
+                        "environment": [
+                          {
+                            "name": "DATA_DIR",
+                            "value": "/app/data"
+                          },
+                          {
+                            "name": "REDIS_URL",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "redis://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "Redis",
+                                      "RedisEndpoint.Address"
+                                    ]
+                                  },
+                                  ":",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "Redis",
+                                      "RedisEndpoint.Port"
+                                    ]
+                                  },
+                                  "/0"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "KLANGIO_BASE_URL",
+                            "value": "https://api.klang.io"
+                          },
+                          {
+                            "name": "KLANGIO_MODEL",
+                            "value": "universal"
+                          },
+                          {
+                            "name": "KLANGIO_POLL_INTERVAL_SEC",
+                            "value": "2"
+                          },
+                          {
+                            "name": "KLANGIO_POLL_TIMEOUT_SEC",
+                            "value": "180"
+                          },
+                          {
+                            "name": "COACH_PROVIDER",
+                            "value": "rules"
+                          },
+                          {
+                            "name": "CORS_ALLOWED_ORIGIN",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "https://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "FrontendCdn4FEA09D9",
+                                      "DomainName"
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "PYTHONPATH",
+                            "value": "/app"
+                          },
+                          {
+                            "name": "DATABASE_URL",
+                            "value": "postgresql://placeholder:placeholder@placeholder:5432/jazzlicklab"
+                          }
+                        ],
+                        "secrets": [
+                          {
+                            "name": "KLANGIO_API_KEY",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "ApiSecretsED109BDA"
+                                  },
+                                  ":KLANGIO_API_KEY::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "ANTHROPIC_API_KEY",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "ApiSecretsED109BDA"
+                                  },
+                                  ":ANTHROPIC_API_KEY::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_HOST",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":host::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_PORT",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":port::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_USERNAME",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":username::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_PASSWORD",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":password::"
+                                ]
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "cpu": "512",
+                    "executionRoleArn": {
+                      "Fn::GetAtt": [
+                        "ApiTaskDefExecutionRoleE6ABB053",
+                        "Arn"
+                      ]
+                    },
+                    "family": "JazzLickLabStackApiTaskDef45559B41",
+                    "memory": "1024",
+                    "networkMode": "awsvpc",
+                    "requiresCompatibilities": [
+                      "FARGATE"
+                    ],
+                    "taskRoleArn": {
+                      "Fn::GetAtt": [
+                        "ApiTaskDefTaskRole76FB19FA",
+                        "Arn"
+                      ]
+                    },
+                    "volumes": [
+                      {
+                        "name": "data-volume",
+                        "efsVolumeConfiguration": {
+                          "filesystemId": {
+                            "Ref": "DataFsBDCE8805"
+                          },
+                          "authorizationConfig": {
+                            "accessPointId": {
+                              "Ref": "DataFsDataApC4F3279B"
+                            },
+                            "iam": "ENABLED"
+                          },
+                          "transitEncryption": "ENABLED"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnTaskDefinition",
+                  "version": "2.178.2"
+                }
+              },
+              "api": {
+                "id": "api",
+                "path": "JazzLickLabStack/ApiTaskDef/api",
+                "children": {
+                  "LogGroup": {
+                    "id": "LogGroup",
+                    "path": "JazzLickLabStack/ApiTaskDef/api/LogGroup",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/ApiTaskDef/api/LogGroup/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::Logs::LogGroup",
+                          "aws:cdk:cloudformation:props": {
+                            "retentionInDays": 7
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_logs.CfnLogGroup",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_logs.LogGroup",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.ContainerDefinition",
+                  "version": "2.178.2"
+                }
+              },
+              "ExecutionRole": {
+                "id": "ExecutionRole",
+                "path": "JazzLickLabStack/ApiTaskDef/ExecutionRole",
+                "children": {
+                  "ImportExecutionRole": {
+                    "id": "ImportExecutionRole",
+                    "path": "JazzLickLabStack/ApiTaskDef/ExecutionRole/ImportExecutionRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/ApiTaskDef/ExecutionRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "JazzLickLabStack/ApiTaskDef/ExecutionRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/ApiTaskDef/ExecutionRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "ecr:BatchCheckLayerAvailability",
+                                    "ecr:GetDownloadUrlForLayer",
+                                    "ecr:BatchGetImage"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "ApiRepoEFA7BA97",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": "ecr:GetAuthorizationToken",
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                },
+                                {
+                                  "Action": [
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "ApiTaskDefapiLogGroup9FDF1262",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": [
+                                    "secretsmanager:GetSecretValue",
+                                    "secretsmanager:DescribeSecret"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Ref": "ApiSecretsED109BDA"
+                                  }
+                                },
+                                {
+                                  "Action": [
+                                    "secretsmanager:GetSecretValue",
+                                    "secretsmanager:DescribeSecret"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  }
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "ApiTaskDefExecutionRoleDefaultPolicy358EAD94",
+                            "roles": [
+                              {
+                                "Ref": "ApiTaskDefExecutionRoleE6ABB053"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateTaskDefinition",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "WorkerTaskDef": {
+            "id": "WorkerTaskDef",
+            "path": "JazzLickLabStack/WorkerTaskDef",
+            "children": {
+              "TaskRole": {
+                "id": "TaskRole",
+                "path": "JazzLickLabStack/WorkerTaskDef/TaskRole",
+                "children": {
+                  "ImportTaskRole": {
+                    "id": "ImportTaskRole",
+                    "path": "JazzLickLabStack/WorkerTaskDef/TaskRole/ImportTaskRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/WorkerTaskDef/TaskRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "JazzLickLabStack/WorkerTaskDef/TaskRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/WorkerTaskDef/TaskRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "elasticfilesystem:ClientMount",
+                                    "elasticfilesystem:ClientWrite",
+                                    "elasticfilesystem:ClientRootAccess"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "DataFsBDCE8805",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": [
+                                    "s3:GetObject*",
+                                    "s3:GetBucket*",
+                                    "s3:List*",
+                                    "s3:DeleteObject*",
+                                    "s3:PutObject",
+                                    "s3:PutObjectLegalHold",
+                                    "s3:PutObjectRetention",
+                                    "s3:PutObjectTagging",
+                                    "s3:PutObjectVersionTagging",
+                                    "s3:Abort*"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "ArtifactsBucket2AAC5544",
+                                        "Arn"
+                                      ]
+                                    },
+                                    {
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "ArtifactsBucket2AAC5544",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/*"
+                                        ]
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "WorkerTaskDefTaskRoleDefaultPolicy04B116E6",
+                            "roles": [
+                              {
+                                "Ref": "WorkerTaskDefTaskRole7915D243"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "JazzLickLabStack/WorkerTaskDef/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::TaskDefinition",
+                  "aws:cdk:cloudformation:props": {
+                    "containerDefinitions": [
+                      {
+                        "command": [
+                          "sh",
+                          "-c",
+                          "export DATABASE_URL=\"postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/jazzlicklab\" && python workers/worker.py"
+                        ],
+                        "essential": true,
+                        "image": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::Select": [
+                                  4,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "WorkerRepoEE566D3E",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".dkr.ecr.",
+                              {
+                                "Fn::Select": [
+                                  3,
+                                  {
+                                    "Fn::Split": [
+                                      ":",
+                                      {
+                                        "Fn::GetAtt": [
+                                          "WorkerRepoEE566D3E",
+                                          "Arn"
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              ".",
+                              {
+                                "Ref": "AWS::URLSuffix"
+                              },
+                              "/",
+                              {
+                                "Ref": "WorkerRepoEE566D3E"
+                              },
+                              ":latest"
+                            ]
+                          ]
+                        },
+                        "mountPoints": [
+                          {
+                            "containerPath": "/app/data",
+                            "readOnly": false,
+                            "sourceVolume": "data-volume"
+                          }
+                        ],
+                        "name": "worker",
+                        "logConfiguration": {
+                          "logDriver": "awslogs",
+                          "options": {
+                            "awslogs-group": {
+                              "Ref": "WorkerTaskDefworkerLogGroup76A78CDA"
+                            },
+                            "awslogs-stream-prefix": "worker",
+                            "awslogs-region": "us-east-1"
+                          }
+                        },
+                        "environment": [
+                          {
+                            "name": "DATA_DIR",
+                            "value": "/app/data"
+                          },
+                          {
+                            "name": "REDIS_URL",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "redis://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "Redis",
+                                      "RedisEndpoint.Address"
+                                    ]
+                                  },
+                                  ":",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "Redis",
+                                      "RedisEndpoint.Port"
+                                    ]
+                                  },
+                                  "/0"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "KLANGIO_BASE_URL",
+                            "value": "https://api.klang.io"
+                          },
+                          {
+                            "name": "KLANGIO_MODEL",
+                            "value": "universal"
+                          },
+                          {
+                            "name": "KLANGIO_POLL_INTERVAL_SEC",
+                            "value": "2"
+                          },
+                          {
+                            "name": "KLANGIO_POLL_TIMEOUT_SEC",
+                            "value": "180"
+                          },
+                          {
+                            "name": "COACH_PROVIDER",
+                            "value": "rules"
+                          },
+                          {
+                            "name": "CORS_ALLOWED_ORIGIN",
+                            "value": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "https://",
+                                  {
+                                    "Fn::GetAtt": [
+                                      "FrontendCdn4FEA09D9",
+                                      "DomainName"
+                                    ]
+                                  }
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "PYTHONPATH",
+                            "value": "/app"
+                          },
+                          {
+                            "name": "DATABASE_URL",
+                            "value": "postgresql://placeholder:placeholder@placeholder:5432/jazzlicklab"
+                          }
+                        ],
+                        "secrets": [
+                          {
+                            "name": "KLANGIO_API_KEY",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "ApiSecretsED109BDA"
+                                  },
+                                  ":KLANGIO_API_KEY::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "ANTHROPIC_API_KEY",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "ApiSecretsED109BDA"
+                                  },
+                                  ":ANTHROPIC_API_KEY::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_HOST",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":host::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_PORT",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":port::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_USERNAME",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":username::"
+                                ]
+                              ]
+                            }
+                          },
+                          {
+                            "name": "DB_PASSWORD",
+                            "valueFrom": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  },
+                                  ":password::"
+                                ]
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "cpu": "512",
+                    "executionRoleArn": {
+                      "Fn::GetAtt": [
+                        "WorkerTaskDefExecutionRoleA889F066",
+                        "Arn"
+                      ]
+                    },
+                    "family": "JazzLickLabStackWorkerTaskDef3B070CCF",
+                    "memory": "1024",
+                    "networkMode": "awsvpc",
+                    "requiresCompatibilities": [
+                      "FARGATE"
+                    ],
+                    "taskRoleArn": {
+                      "Fn::GetAtt": [
+                        "WorkerTaskDefTaskRole7915D243",
+                        "Arn"
+                      ]
+                    },
+                    "volumes": [
+                      {
+                        "name": "data-volume",
+                        "efsVolumeConfiguration": {
+                          "filesystemId": {
+                            "Ref": "DataFsBDCE8805"
+                          },
+                          "authorizationConfig": {
+                            "accessPointId": {
+                              "Ref": "DataFsDataApC4F3279B"
+                            },
+                            "iam": "ENABLED"
+                          },
+                          "transitEncryption": "ENABLED"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnTaskDefinition",
+                  "version": "2.178.2"
+                }
+              },
+              "worker": {
+                "id": "worker",
+                "path": "JazzLickLabStack/WorkerTaskDef/worker",
+                "children": {
+                  "LogGroup": {
+                    "id": "LogGroup",
+                    "path": "JazzLickLabStack/WorkerTaskDef/worker/LogGroup",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/WorkerTaskDef/worker/LogGroup/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::Logs::LogGroup",
+                          "aws:cdk:cloudformation:props": {
+                            "retentionInDays": 7
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_logs.CfnLogGroup",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_logs.LogGroup",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.ContainerDefinition",
+                  "version": "2.178.2"
+                }
+              },
+              "ExecutionRole": {
+                "id": "ExecutionRole",
+                "path": "JazzLickLabStack/WorkerTaskDef/ExecutionRole",
+                "children": {
+                  "ImportExecutionRole": {
+                    "id": "ImportExecutionRole",
+                    "path": "JazzLickLabStack/WorkerTaskDef/ExecutionRole/ImportExecutionRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "JazzLickLabStack/WorkerTaskDef/ExecutionRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "ecs-tasks.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.178.2"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "JazzLickLabStack/WorkerTaskDef/ExecutionRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "JazzLickLabStack/WorkerTaskDef/ExecutionRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "ecr:BatchCheckLayerAvailability",
+                                    "ecr:GetDownloadUrlForLayer",
+                                    "ecr:BatchGetImage"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "WorkerRepoEE566D3E",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": "ecr:GetAuthorizationToken",
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                },
+                                {
+                                  "Action": [
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "WorkerTaskDefworkerLogGroup76A78CDA",
+                                      "Arn"
+                                    ]
+                                  }
+                                },
+                                {
+                                  "Action": [
+                                    "secretsmanager:GetSecretValue",
+                                    "secretsmanager:DescribeSecret"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Ref": "ApiSecretsED109BDA"
+                                  }
+                                },
+                                {
+                                  "Action": [
+                                    "secretsmanager:GetSecretValue",
+                                    "secretsmanager:DescribeSecret"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Ref": "PostgresSecretAttachment75CD6F6F"
+                                  }
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "WorkerTaskDefExecutionRoleDefaultPolicy7E2F924A",
+                            "roles": [
+                              {
+                                "Ref": "WorkerTaskDefExecutionRoleA889F066"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.178.2"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.178.2",
+                      "metadata": []
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.178.2",
+                  "metadata": []
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateTaskDefinition",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "ApiService": {
+            "id": "ApiService",
+            "path": "JazzLickLabStack/ApiService",
+            "children": {
+              "Service": {
+                "id": "Service",
+                "path": "JazzLickLabStack/ApiService/Service",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::Service",
+                  "aws:cdk:cloudformation:props": {
+                    "cluster": {
+                      "Ref": "ClusterEB0386A7"
+                    },
+                    "deploymentConfiguration": {
+                      "maximumPercent": 200,
+                      "minimumHealthyPercent": 50,
+                      "alarms": {
+                        "alarmNames": [],
+                        "enable": false,
+                        "rollback": false
+                      }
+                    },
+                    "desiredCount": 1,
+                    "enableEcsManagedTags": false,
+                    "healthCheckGracePeriodSeconds": 60,
+                    "launchType": "FARGATE",
+                    "loadBalancers": [
+                      {
+                        "targetGroupArn": {
+                          "Ref": "AlbHttpListenerApiTargetGroup47BD0ADD"
+                        },
+                        "containerName": "api",
+                        "containerPort": 8000
+                      }
+                    ],
+                    "networkConfiguration": {
+                      "awsvpcConfiguration": {
+                        "assignPublicIp": "DISABLED",
+                        "subnets": [
+                          {
+                            "Ref": "VpcPrivateSubnet1Subnet536B997A"
+                          },
+                          {
+                            "Ref": "VpcPrivateSubnet2Subnet3788AAA1"
+                          }
+                        ],
+                        "securityGroups": [
+                          {
+                            "Fn::GetAtt": [
+                              "EcsSg17B4B0B3",
+                              "GroupId"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "platformVersion": "1.4.0",
+                    "taskDefinition": {
+                      "Ref": "ApiTaskDef37DBDBD0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnService",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateService",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "WorkerService": {
+            "id": "WorkerService",
+            "path": "JazzLickLabStack/WorkerService",
+            "children": {
+              "Service": {
+                "id": "Service",
+                "path": "JazzLickLabStack/WorkerService/Service",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ECS::Service",
+                  "aws:cdk:cloudformation:props": {
+                    "cluster": {
+                      "Ref": "ClusterEB0386A7"
+                    },
+                    "deploymentConfiguration": {
+                      "maximumPercent": 200,
+                      "minimumHealthyPercent": 50,
+                      "alarms": {
+                        "alarmNames": [],
+                        "enable": false,
+                        "rollback": false
+                      }
+                    },
+                    "desiredCount": 1,
+                    "enableEcsManagedTags": false,
+                    "launchType": "FARGATE",
+                    "networkConfiguration": {
+                      "awsvpcConfiguration": {
+                        "assignPublicIp": "DISABLED",
+                        "subnets": [
+                          {
+                            "Ref": "VpcPrivateSubnet1Subnet536B997A"
+                          },
+                          {
+                            "Ref": "VpcPrivateSubnet2Subnet3788AAA1"
+                          }
+                        ],
+                        "securityGroups": [
+                          {
+                            "Fn::GetAtt": [
+                              "EcsSg17B4B0B3",
+                              "GroupId"
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "platformVersion": "1.4.0",
+                    "taskDefinition": {
+                      "Ref": "WorkerTaskDef3CFCC8D9"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_ecs.CfnService",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_ecs.FargateService",
+              "version": "2.178.2",
+              "metadata": []
+            }
+          },
+          "AlbUrl": {
+            "id": "AlbUrl",
+            "path": "JazzLickLabStack/AlbUrl",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.178.2"
+            }
+          },
+          "CloudFrontUrl": {
+            "id": "CloudFrontUrl",
+            "path": "JazzLickLabStack/CloudFrontUrl",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.178.2"
+            }
+          },
+          "ApiEcrRepoUri": {
+            "id": "ApiEcrRepoUri",
+            "path": "JazzLickLabStack/ApiEcrRepoUri",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.178.2"
+            }
+          },
+          "WorkerEcrRepoUri": {
+            "id": "WorkerEcrRepoUri",
+            "path": "JazzLickLabStack/WorkerEcrRepoUri",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.178.2"
+            }
+          },
+          "FrontendBucketName": {
+            "id": "FrontendBucketName",
+            "path": "JazzLickLabStack/FrontendBucketName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.178.2"
+            }
+          },
+          "ArtifactsBucketName": {
+            "id": "ArtifactsBucketName",
+            "path": "JazzLickLabStack/ArtifactsBucketName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.178.2"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "JazzLickLabStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "JazzLickLabStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.178.2"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.5.1"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "JazzLickLabStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.178.2"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "JazzLickLabStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.178.2"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.178.2"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.5.1"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.178.2"
+    }
+  }
+}

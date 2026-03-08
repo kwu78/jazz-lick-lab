@@ -603,21 +603,53 @@ def create_practice_pack(
     if matched is None:
         raise HTTPException(status_code=404, detail="Selection not found")
 
-    # Extract lick (raw-time)
-    notes, chords = _extract_lick(transcription, matched.start_sec, matched.end_sec)
+    # Selection times are display-time; convert to raw-time for extraction
+    offset = job_settings.offset_sec
+    raw_start = matched.start_sec + offset
+    raw_end = matched.end_sec + offset
 
-    # Build the practice pack
+    notes, chords = _extract_lick(transcription, raw_start, raw_end)
+
+    # Barline alignment (same logic as score-preview)
+    bpm = job_settings.bpm or 120.0
+    time_sig = job_settings.time_signature or "4/4"
+    beats_per_measure = int(time_sig.split("/")[0])
+    beat_dur = 60.0 / bpm
+    measure_dur = beat_dur * beats_per_measure
+
+    display_start = matched.start_sec
+    origin = math.floor(display_start / measure_dur) * measure_dur
+
+    notes = [
+        NoteEvent(
+            pitch_midi=n.pitch_midi,
+            start_sec=n.start_sec - offset - origin,
+            duration_sec=n.duration_sec,
+        )
+        for n in notes
+    ]
+    chords = [
+        ChordEvent(
+            symbol=c.symbol,
+            start_sec=c.start_sec - offset - origin,
+            end_sec=(c.end_sec - offset - origin) if c.end_sec is not None else None,
+        )
+        for c in chords
+    ]
+
+    # Build the practice pack (offset_sec=0 since we already aligned)
     artifact = build_practice_pack(
         job_id=job.id,
         selection_id=req.selection_id,
         notes=notes,
         chords=chords,
-        offset_sec=job_settings.offset_sec,
+        offset_sec=0,
         data_dir=settings.data_dir,
         target_keys=req.target_keys,
         include_original=req.include_original,
-        bpm=job_settings.bpm or 120.0,
-        time_signature=job_settings.time_signature or "4/4",
+        bpm=bpm,
+        time_signature=time_sig,
+        key_signature=job_settings.key_signature,
     )
 
     # Store artifact metadata in result_json["practice_packs"]

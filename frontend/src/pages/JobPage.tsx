@@ -383,6 +383,9 @@ export default function JobPage() {
           <PracticePackPanel
             jobId={jobId}
             selectionId={activeSelection?.selection_id ?? null}
+            selectionStart={activeSelection?.start_sec ?? null}
+            selectionEnd={activeSelection?.end_sec ?? null}
+            settingsVersion={settingsVersion}
           />
         </>
       )}

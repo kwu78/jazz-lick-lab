@@ -6,8 +6,9 @@ from datetime import datetime, timezone
 
 from schemas.practice_pack import KeyEntry, PracticePackArtifact
 from schemas.transcription import NoteEvent, ChordEvent
-from services.musicxml import generate_musicxml
+from services.musicxml import generate_musicxml, cleanup_notes_for_notation
 from services.theory import (
+    PITCH_CLASS,
     SEMITONE_TO_NAME,
     parse_chord_root,
     semitone_interval,
@@ -29,11 +30,14 @@ def build_practice_pack(
     include_original: bool = True,
     bpm: float = 120.0,
     time_signature: str = "4/4",
+    key_signature: str | None = None,
 ) -> PracticePackArtifact:
     """Generate per-key JSON files, a manifest, and a ZIP archive."""
 
-    # Infer source key from first chord root
-    if not chords:
+    # Source key: prefer detected key_signature, fall back to first chord root
+    if key_signature:
+        source_key = key_signature
+    elif not chords:
         source_key = "C"
     else:
         root = parse_chord_root(chords[0].symbol)
@@ -97,10 +101,21 @@ def build_practice_pack(
         with open(file_path, "w") as f:
             json.dump(entry.model_dump(), f, indent=2)
 
+        # Clean up note timing for readable notation
+        cleaned_notes = cleanup_notes_for_notation(transposed_notes)
+
+        # Transpose key signature to match target key
+        effective_key_sig: str | None = None
+        if key_signature:
+            effective_key_sig = SEMITONE_TO_NAME[
+                (PITCH_CLASS[key_signature] + interval) % 12
+            ]
+
         # Write per-key MusicXML file
         mxml_str = generate_musicxml(
-            transposed_notes, transposed_chords,
+            cleaned_notes, transposed_chords,
             bpm=bpm, time_signature=time_signature,
+            key_sig=effective_key_sig,
         )
         mxml_path = os.path.join(pack_dir, musicxml_file_name)
         with open(mxml_path, "w", encoding="utf-8") as f:

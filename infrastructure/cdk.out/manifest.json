@@ -1,0 +1,603 @@
+{
+  "version": "39.0.0",
+  "artifacts": {
+    "JazzLickLabStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "JazzLickLabStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "JazzLickLabStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://867958227456/us-east-1",
+      "properties": {
+        "templateFile": "JazzLickLabStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::867958227456:role/cdk-hnb659fds-deploy-role-867958227456-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::867958227456:role/cdk-hnb659fds-cfn-exec-role-867958227456-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-867958227456-us-east-1/ee40caac3f2bae841ef3e9ab29f60ab3e39eb001e93fd679e1deb773a05559ee.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "JazzLickLabStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::867958227456:role/cdk-hnb659fds-lookup-role-867958227456-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "JazzLickLabStack.assets"
+      ],
+      "metadata": {
+        "/JazzLickLabStack/Vpc/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Vpc8378EB38"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet1Subnet5C2D37C4"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet1RouteTable6C95E38E"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet1RouteTableAssociation97140677"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet1DefaultRoute3DA9E72A"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet1/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet1EIPD7E02669"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet1/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet1NATGateway4D7517AA"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet2Subnet691E08A3"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet2RouteTable94F7E489"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet2RouteTableAssociationDD5762D8"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PublicSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPublicSubnet2DefaultRoute97F91067"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet1Subnet536B997A"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet1RouteTableB2C5B500"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet1RouteTableAssociation70C59FA6"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet1DefaultRouteBE02A9ED"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet2Subnet3788AAA1"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet2RouteTableA678073B"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet2RouteTableAssociationA89CAD56"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/PrivateSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcPrivateSubnet2DefaultRoute060D2087"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/IGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcIGWD7BA715C"
+          }
+        ],
+        "/JazzLickLabStack/Vpc/VPCGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "VpcVPCGWBF912B6E"
+          }
+        ],
+        "/JazzLickLabStack/AlbSg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AlbSg1155C1BE"
+          }
+        ],
+        "/JazzLickLabStack/EcsSg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EcsSg17B4B0B3"
+          }
+        ],
+        "/JazzLickLabStack/EcsSg/from JazzLickLabStackAlbSgC54EDA86:8000": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EcsSgfromJazzLickLabStackAlbSgC54EDA8680005AE75AE8"
+          }
+        ],
+        "/JazzLickLabStack/DbSg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DbSg495F8305"
+          }
+        ],
+        "/JazzLickLabStack/DbSg/from JazzLickLabStackEcsSg8826DDE3:5432": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DbSgfromJazzLickLabStackEcsSg8826DDE354323622791A"
+          }
+        ],
+        "/JazzLickLabStack/RedisSg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RedisSgFB48DCCD"
+          }
+        ],
+        "/JazzLickLabStack/RedisSg/from JazzLickLabStackEcsSg8826DDE3:6379": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RedisSgfromJazzLickLabStackEcsSg8826DDE36379D6F281CC"
+          }
+        ],
+        "/JazzLickLabStack/EfsSg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EfsSgCAB16DA1"
+          }
+        ],
+        "/JazzLickLabStack/EfsSg/from JazzLickLabStackEcsSg8826DDE3:2049": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EfsSgfromJazzLickLabStackEcsSg8826DDE32049884BD6A0"
+          }
+        ],
+        "/JazzLickLabStack/Postgres/SubnetGroup/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PostgresSubnetGroup9F8A4D6E"
+          }
+        ],
+        "/JazzLickLabStack/Postgres/Secret/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "JazzLickLabStackPostgresSecretE151D77F3fdaad7efa858a3daf9490cf0a702aeb"
+          }
+        ],
+        "/JazzLickLabStack/Postgres/Secret/Attachment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PostgresSecretAttachment75CD6F6F"
+          }
+        ],
+        "/JazzLickLabStack/Postgres/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Postgres9DC8BB04"
+          }
+        ],
+        "/JazzLickLabStack/RedisSubnets": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RedisSubnets"
+          }
+        ],
+        "/JazzLickLabStack/Redis": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Redis"
+          }
+        ],
+        "/JazzLickLabStack/DataFs/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DataFsBDCE8805"
+          }
+        ],
+        "/JazzLickLabStack/DataFs/EfsMountTarget1": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DataFsEfsMountTarget1EBB3D316"
+          }
+        ],
+        "/JazzLickLabStack/DataFs/EfsMountTarget2": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DataFsEfsMountTarget2A383F7AE"
+          }
+        ],
+        "/JazzLickLabStack/DataFs/DataAp/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DataFsDataApC4F3279B"
+          }
+        ],
+        "/JazzLickLabStack/ApiSecrets/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiSecretsED109BDA"
+          }
+        ],
+        "/JazzLickLabStack/ArtifactsBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ArtifactsBucket2AAC5544"
+          }
+        ],
+        "/JazzLickLabStack/ArtifactsBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ArtifactsBucketPolicy852CB646"
+          }
+        ],
+        "/JazzLickLabStack/ArtifactsBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ArtifactsBucketAutoDeleteObjectsCustomResource0E3B4320"
+          }
+        ],
+        "/JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+          {
+            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+            "data": true
+          }
+        ],
+        "/JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+          }
+        ],
+        "/JazzLickLabStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/JazzLickLabStack/FrontendBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendBucketEFE2E19C"
+          }
+        ],
+        "/JazzLickLabStack/FrontendBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendBucketPolicy1DFF75D9"
+          }
+        ],
+        "/JazzLickLabStack/FrontendBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendBucketAutoDeleteObjectsCustomResourceDB860B32"
+          }
+        ],
+        "/JazzLickLabStack/Alb/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "Alb16C2F182"
+          }
+        ],
+        "/JazzLickLabStack/Alb/HttpListener/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AlbHttpListener00C8B33E"
+          }
+        ],
+        "/JazzLickLabStack/Alb/HttpListener/ApiTargetGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AlbHttpListenerApiTargetGroup47BD0ADD"
+          }
+        ],
+        "/JazzLickLabStack/FrontendCdn/Origin1/S3OriginAccessControl/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendCdnOrigin1S3OriginAccessControl597F6BF9"
+          }
+        ],
+        "/JazzLickLabStack/FrontendCdn/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendCdn4FEA09D9"
+          }
+        ],
+        "/JazzLickLabStack/ApiRepo/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiRepoEFA7BA97"
+          }
+        ],
+        "/JazzLickLabStack/WorkerRepo/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerRepoEE566D3E"
+          }
+        ],
+        "/JazzLickLabStack/Cluster/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ClusterEB0386A7"
+          }
+        ],
+        "/JazzLickLabStack/ApiTaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiTaskDefTaskRole76FB19FA"
+          }
+        ],
+        "/JazzLickLabStack/ApiTaskDef/TaskRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiTaskDefTaskRoleDefaultPolicy66F6BAC0"
+          }
+        ],
+        "/JazzLickLabStack/ApiTaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiTaskDef37DBDBD0"
+          }
+        ],
+        "/JazzLickLabStack/ApiTaskDef/api/LogGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiTaskDefapiLogGroup9FDF1262"
+          }
+        ],
+        "/JazzLickLabStack/ApiTaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiTaskDefExecutionRoleE6ABB053"
+          }
+        ],
+        "/JazzLickLabStack/ApiTaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiTaskDefExecutionRoleDefaultPolicy358EAD94"
+          }
+        ],
+        "/JazzLickLabStack/WorkerTaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerTaskDefTaskRole7915D243"
+          }
+        ],
+        "/JazzLickLabStack/WorkerTaskDef/TaskRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerTaskDefTaskRoleDefaultPolicy04B116E6"
+          }
+        ],
+        "/JazzLickLabStack/WorkerTaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerTaskDef3CFCC8D9"
+          }
+        ],
+        "/JazzLickLabStack/WorkerTaskDef/worker/LogGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerTaskDefworkerLogGroup76A78CDA"
+          }
+        ],
+        "/JazzLickLabStack/WorkerTaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerTaskDefExecutionRoleA889F066"
+          }
+        ],
+        "/JazzLickLabStack/WorkerTaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerTaskDefExecutionRoleDefaultPolicy7E2F924A"
+          }
+        ],
+        "/JazzLickLabStack/ApiService": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "minHealthyPercent has not been configured so the default value of 50% is used. The number of running tasks will decrease below the desired count during deployments etc. See https://github.com/aws/aws-cdk/issues/31705 [ack: @aws-cdk/aws-ecs:minHealthyPercent]",
+            "trace": [
+              "Annotations.addMessage (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1608)",
+              "Annotations.addWarningV2 (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
+              "new BaseService (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/aws-ecs/lib/base/base-service.js:1:8100)",
+              "new FargateService (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/aws-ecs/lib/fargate/fargate-service.js:1:3551)",
+              "new JazzLickLabStack (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/lib/jazz-lick-lab-stack.ts:399:24)",
+              "Object.<anonymous> (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/bin/infrastructure.ts:8:1)",
+              "Module._compile (node:internal/modules/cjs/loader:1706:14)",
+              "Module.m._compile (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/index.ts:1618:23)",
+              "node:internal/modules/cjs/loader:1839:10",
+              "Object.require.extensions.<computed> [as .ts] (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/index.ts:1621:12)",
+              "Module.load (node:internal/modules/cjs/loader:1441:32)",
+              "Function._load (node:internal/modules/cjs/loader:1263:12)",
+              "TracingChannel.traceSync (node:diagnostics_channel:328:14)",
+              "wrapModuleLoad (node:internal/modules/cjs/loader:237:24)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)",
+              "phase4 (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:649:14)",
+              "bootstrap (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:95:10)",
+              "main (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:55:10)",
+              "Object.<anonymous> (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:800:3)",
+              "Module._compile (node:internal/modules/cjs/loader:1706:14)",
+              "Object.<anonymous> (node:internal/modules/cjs/loader:1839:10)",
+              "Module.load (node:internal/modules/cjs/loader:1441:32)",
+              "Function._load (node:internal/modules/cjs/loader:1263:12)",
+              "TracingChannel.traceSync (node:diagnostics_channel:328:14)",
+              "wrapModuleLoad (node:internal/modules/cjs/loader:237:24)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)",
+              "node:internal/main/run_main_module:36:49"
+            ]
+          }
+        ],
+        "/JazzLickLabStack/ApiService/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiServiceC9037CF0"
+          }
+        ],
+        "/JazzLickLabStack/WorkerService": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "minHealthyPercent has not been configured so the default value of 50% is used. The number of running tasks will decrease below the desired count during deployments etc. See https://github.com/aws/aws-cdk/issues/31705 [ack: @aws-cdk/aws-ecs:minHealthyPercent]",
+            "trace": [
+              "Annotations.addMessage (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:1608)",
+              "Annotations.addWarningV2 (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/core/lib/annotations.js:1:825)",
+              "new BaseService (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/aws-ecs/lib/base/base-service.js:1:8100)",
+              "new FargateService (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/node_modules/aws-cdk-lib/aws-ecs/lib/fargate/fargate-service.js:1:3551)",
+              "new JazzLickLabStack (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/lib/jazz-lick-lab-stack.ts:424:5)",
+              "Object.<anonymous> (/Users/Kevin/Desktop/poc/jazz-lick-lab/infrastructure/bin/infrastructure.ts:8:1)",
+              "Module._compile (node:internal/modules/cjs/loader:1706:14)",
+              "Module.m._compile (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/index.ts:1618:23)",
+              "node:internal/modules/cjs/loader:1839:10",
+              "Object.require.extensions.<computed> [as .ts] (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/index.ts:1621:12)",
+              "Module.load (node:internal/modules/cjs/loader:1441:32)",
+              "Function._load (node:internal/modules/cjs/loader:1263:12)",
+              "TracingChannel.traceSync (node:diagnostics_channel:328:14)",
+              "wrapModuleLoad (node:internal/modules/cjs/loader:237:24)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)",
+              "phase4 (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:649:14)",
+              "bootstrap (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:95:10)",
+              "main (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:55:10)",
+              "Object.<anonymous> (/Users/Kevin/.npm/_npx/1bf7c3c15bf47d04/node_modules/ts-node/src/bin.ts:800:3)",
+              "Module._compile (node:internal/modules/cjs/loader:1706:14)",
+              "Object.<anonymous> (node:internal/modules/cjs/loader:1839:10)",
+              "Module.load (node:internal/modules/cjs/loader:1441:32)",
+              "Function._load (node:internal/modules/cjs/loader:1263:12)",
+              "TracingChannel.traceSync (node:diagnostics_channel:328:14)",
+              "wrapModuleLoad (node:internal/modules/cjs/loader:237:24)",
+              "Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)",
+              "node:internal/main/run_main_module:36:49"
+            ]
+          }
+        ],
+        "/JazzLickLabStack/WorkerService/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerService99815FA9"
+          }
+        ],
+        "/JazzLickLabStack/AlbUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AlbUrl"
+          }
+        ],
+        "/JazzLickLabStack/CloudFrontUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CloudFrontUrl"
+          }
+        ],
+        "/JazzLickLabStack/ApiEcrRepoUri": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiEcrRepoUri"
+          }
+        ],
+        "/JazzLickLabStack/WorkerEcrRepoUri": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WorkerEcrRepoUri"
+          }
+        ],
+        "/JazzLickLabStack/FrontendBucketName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FrontendBucketName"
+          }
+        ],
+        "/JazzLickLabStack/ArtifactsBucketName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ArtifactsBucketName"
+          }
+        ],
+        "/JazzLickLabStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/JazzLickLabStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/JazzLickLabStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "JazzLickLabStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

@@ -14,7 +14,7 @@ Interactive waveform with region selection, beat grid overlay, and settings (tap
 
 ![Score Preview](screenshots/Scoring.png)
 
-MusicXML score rendered in-browser. Supports key transposition, zoom, and notes beaming. The scoring accuracy still needs to be improved to make the notes look more readable. 
+MusicXML score rendered in-browser. Supports key transposition, zoom, and notes beaming.
 
 ### Analysis & Coaching
 
@@ -31,16 +31,30 @@ backend/           FastAPI + SQLAlchemy + Postgres
   services/        Klangio API, MusicXML generation, music theory, coaching
   workers/         RQ background workers for transcription
   schemas/         Pydantic models
+infrastructure/    AWS CDK v2 (TypeScript)
 docker-compose.yml Postgres, Redis, API, Worker
 ```
 
-## Quick Start
+## Features
+
+- Audio upload with Klangio transcription (notes, chords, source separation, beat tracking)
+- Grand staff notation (treble + bass clefs) with automatic staff assignment
+- Score preview with key transposition, zoom, and chord symbol alignment
+- Chord symbol normalization (Klangio format → standard notation)
+- Source separation A/B toggle (original vs isolated stem playback)
+- Settings calibration (tap tempo, set-to-playhead offset, time signature)
+- Lick analysis (chord tone / tension / passing tone breakdown)
+- AI coaching (rule-based default, optional LLM via Anthropic API)
+- Practice pack generation with transposition to all 12 keys (MusicXML + ZIP download)
+- Consistent score rendering between preview and practice pack views
+
+## Quick Start (Local)
 
 ### Prerequisites
 
 - Docker & Docker Compose
 - Node.js 22+ (for frontend dev server)
-- A [Klangio](https://klangio.com) API key (for transcription)
+- A [Klangio](https://klangio.com) API key
 
 ### 1. Clone and configure
 
@@ -58,7 +72,7 @@ DATA_DIR=/app/data
 KLANGIO_API_TOKEN=<your-klangio-token>
 ```
 
-Optional — for LLM-powered coaching (defaults to rule-based):
+Optional — for LLM-powered coaching:
 
 ```
 COACH_PROVIDER=llm
@@ -77,37 +91,46 @@ This starts Postgres, Redis, the FastAPI server (port 8000), and the RQ worker.
 
 ```bash
 cd frontend
-nvm use 22        
+nvm use 22
 npm install
-npm run dev       
+VITE_API_URL=http://localhost:8000 npm run dev
 ```
 
 ### 4. Use it
 
 1. Upload an audio file on the home page
-2. Wait for transcription to complete (Klangio processes notes, chords, beat tracking)
+2. Wait for transcription to complete
 3. Select a region on the waveform to isolate a lick
 4. Adjust BPM/offset using tap tempo or auto-detected values
 5. View the score preview, transpose keys
-6. Check the analysis and coaching panels for practice advice
+6. Generate a practice pack to get the lick in all 12 keys
+7. Check the analysis and coaching panels for practice advice
 
-## Current Status
+## AWS Deployment
 
-**Working end-to-end:**
+The `infrastructure/` directory contains an AWS CDK v2 stack that deploys:
 
-- Audio upload and Klangio transcription (notes + chords + source separation + beat tracking)
-- Auto-detection of BPM, time signature, and offset from Klangio MusicInfo
-- Settings calibration panel (tap tempo, set-to-playhead offset, time sig dropdown)
-- Preliminary preview of the music score 
-- Lick analysis (chord tone / tension / passing tone breakdown)
-- AI coaching (rule-based default, optional LLM via Anthropic API)
-- Practice pack generation (MusicXML export)
+- **VPC** with public/private subnets and NAT gateway
+- **ECS Fargate** for API and Worker services
+- **RDS PostgreSQL** and **ElastiCache Redis**
+- **EFS** shared filesystem for audio/artifact storage
+- **ALB** for API load balancing
+- **CloudFront + S3** for frontend hosting (proxies `/jobs/*` to ALB)
+- **Secrets Manager** for API keys
+
+### Deploy
+
+```bash
+cd infrastructure
+npm install
+npx cdk deploy
+```
+
+After deployment, build and push backend images to ECR, upload the frontend to S3, and set API keys in Secrets Manager.
 
 ## Possible Improvements
-- Improve readability of the music score
+
 - Improve accuracy of the transcription
-- Align the chords currectly on the score
-- Improve chord detections
 - Detect and notate swing 8ths
 - Split polyphonic passages into separate voices
 - Mobile layout — responsive design for tablet/phone use

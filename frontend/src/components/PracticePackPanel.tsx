@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Panel from "./Panel";
 import Button from "./Button";
 import ErrorBox from "./ErrorBox";
@@ -14,9 +14,12 @@ import { BASE_URL } from "../api/client";
 interface Props {
   jobId: string;
   selectionId: string | null;
+  selectionStart: number | null;
+  selectionEnd: number | null;
+  settingsVersion: number;
 }
 
-export default function PracticePackPanel({ jobId, selectionId }: Props) {
+export default function PracticePackPanel({ jobId, selectionId, selectionStart, selectionEnd, settingsVersion }: Props) {
   const [packs, setPacks] = useState<PracticePackArtifact[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
@@ -31,12 +34,12 @@ export default function PracticePackPanel({ jobId, selectionId }: Props) {
       .catch(() => {});
   }, [jobId]);
 
-  // When packs change or selection changes, default the key
+  // When packs change or selection changes, default to source key
   useEffect(() => {
     const pack = packs[selectedPackIdx];
     if (pack && pack.keys_included.length > 0) {
       setSelectedKey((prev) =>
-        pack.keys_included.includes(prev) ? prev : pack.keys_included[0]
+        pack.keys_included.includes(prev) ? prev : (pack.source_key || pack.keys_included[0])
       );
     }
   }, [packs, selectedPackIdx]);
@@ -59,6 +62,19 @@ export default function PracticePackPanel({ jobId, selectionId }: Props) {
   }
 
   const activePack = packs[selectedPackIdx] ?? null;
+
+  const scorePreviewUrl = useMemo(() => {
+    if (!selectionStart || !selectionEnd || !selectedKey) return null;
+    const params = new URLSearchParams({
+      start_sec: selectionStart.toFixed(2),
+      end_sec: selectionEnd.toFixed(2),
+      key: selectedKey,
+    });
+    if (settingsVersion > 0) {
+      params.set("_v", settingsVersion.toString());
+    }
+    return `${BASE_URL}/jobs/${jobId}/score-preview?${params}`;
+  }, [selectionStart, selectionEnd, selectedKey, settingsVersion, jobId]);
 
   return (
     <Panel title="Practice Packs">
@@ -155,13 +171,8 @@ export default function PracticePackPanel({ jobId, selectionId }: Props) {
             </label>
           </div>
 
-          {selectedKey && (
-            <ScoreViewer
-              jobId={jobId}
-              artifactId={activePack.artifact_id}
-              keyName={selectedKey}
-              baseUrl={BASE_URL}
-            />
+          {selectedKey && scorePreviewUrl && (
+            <ScoreViewer musicXmlUrl={scorePreviewUrl} />
           )}
         </div>
       )}
